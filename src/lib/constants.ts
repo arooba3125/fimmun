@@ -1,14 +1,13 @@
 export const MUN_CONSTANTS = {
   // Event Information
   eventName: "Fazaia Inter College Minhas Model United Nations",
-  shortName: "FICMUN",
-  tagline: "Diplomacy in Action • Leadership in Practice",
+  shortName: "FIMMUN",
+  tagline: "Herald of Diplomacy",
   description: "Join us for an extraordinary Model United Nations conference that brings together young leaders, diplomats, and change-makers from across the region. Experience the thrill of international diplomacy, engage in meaningful debates, and develop critical thinking skills that will shape your future.",
   
   // Event Details
-  date: "March 15-17, 2024",
+  date: "November 21-23, 2025",
   location: "Fazaia Inter College Minhas, Pakistan",
-  venue: "Main Auditorium & Conference Halls",
   
   // Contact Information
   contact: {
@@ -19,31 +18,29 @@ export const MUN_CONSTANTS = {
   
   // Social Media
   socialMedia: {
-    instagram: "@ficmun2024",
-    facebook: "FICMUN2024",
-    twitter: "@ficmun2024",
-    linkedin: "FICMUN"
+    instagram: "fimmun.v",
+
   },
   
   // Event Features
   features: [
     {
-      title: "Expert Committees",
+      title: "Tambola Night",
       description: "Participate in specialized UN committees with experienced chairs and engaging topics.",
       icon: "🏛️"
     },
     {
-      title: "Diplomatic Training",
-      description: "Learn negotiation, public speaking, and diplomatic protocol from industry experts.",
+      title: "Qawali Night",
+      description: "Experience the rich cultural heritage of Pakistan through soulful Qawali performances.",
       icon: "🤝"
     },
     {
-      title: "Global Networking",
+      title: "Award Ceremony",
       description: "Connect with like-minded students and build lasting international friendships.",
       icon: "🌍"
     },
     {
-      title: "Awards & Recognition",
+      title: "Formal Dinner",
       description: "Compete for prestigious awards and certificates of excellence.",
       icon: "🏆"
     }
@@ -53,67 +50,86 @@ export const MUN_CONSTANTS = {
   committees: [
     {
       name: "United Nations Security Council",
-      topic: "Addressing Global Security Challenges",
-      delegates: 15,
-      difficulty: "Advanced"
+      topic: "Will be soon updated",
+     difficulty: "Advanced"
     },
+
     {
-      name: "United Nations General Assembly",
-      topic: "Sustainable Development Goals 2030",
-      delegates: 50,
-      difficulty: "Intermediate"
-    },
-    {
-      name: "World Health Organization",
-      topic: "Global Health Security and Pandemic Preparedness",
-      delegates: 30,
+      name: "Pakistan National Assembly ",
+      topic: "Will be soon updated",
       difficulty: "Intermediate"
     },
     {
       name: "United Nations Human Rights Council",
-      topic: "Protecting Human Rights in the Digital Age",
-      delegates: 25,
+      topic: "Will be soon updated",
+      difficulty: "Intermediate"
+    },
+   {     
+      name: "Special Crisis Committee",
+      topic: "Will be soon updated",
+      difficulty: "Intermediate"
+    },
+    {     
+      name: "Commission on the Status of Women",
+      topic: "Will be soon updated",
       difficulty: "Beginner"
-    }
+    },
+       {     
+      name: "Organization of Islamic Cooperation",
+      topic: "Will be soon updated",
+      difficulty: "Beginner"
+    },
+           {     
+      name: "Disarmament and International Security Committee",
+      topic: "Will be soon updated",
+      difficulty: "Advance"
+    }      
+    
+
   ],
   
   // Schedule
   schedule: [
     {
-      day: "Day 1 - March 15",
+      day: "Day 1 - 21 November 2025",
       events: [
-        "09:00 - Registration & Welcome Ceremony",
-        "10:30 - Opening Plenary Session",
-        "12:00 - Committee Sessions Begin",
-        "13:00 - Lunch Break",
-        "14:00 - Committee Sessions Continue",
-        "16:00 - Coffee Break",
-        "16:30 - Committee Sessions",
-        "18:00 - Day 1 Concludes"
+        "Will be revealed soon"
+        // "09:00 - Registration & Welcome Ceremony",
+        // "10:30 - Opening Plenary Session",
+        // "12:00 - Committee Sessions Begin",
+        // "13:00 - Lunch Break",
+        // "14:00 - Committee Sessions Continue",
+        // "16:00 - Coffee Break",
+        // "16:30 - Committee Sessions",
+        // "18:00 - Day 1 Concludes"
       ]
     },
     {
-      day: "Day 2 - March 16",
+      day: "Day 2 - 22 November 2025",
       events: [
-        "09:00 - Committee Sessions Resume",
-        "11:00 - Coffee Break",
-        "11:30 - Committee Sessions",
-        "13:00 - Lunch Break",
-        "14:00 - Committee Sessions Continue",
-        "16:00 - Coffee Break",
-        "16:30 - Final Committee Sessions",
-        "18:00 - Day 2 Concludes"
+                "Will be revealed soon"
+
+        // "09:00 - Committee Sessions Resume",
+        // "11:00 - Coffee Break",
+        // "11:30 - Committee Sessions",
+        // "13:00 - Lunch Break",
+        // "14:00 - Committee Sessions Continue",
+        // "16:00 - Coffee Break",
+        // "16:30 - Final Committee Sessions",
+        // "18:00 - Day 2 Concludes"
       ]
     },
     {
-      day: "Day 3 - March 17",
+      day: "Day 3 - 23 November 2025",
       events: [
-        "09:00 - Final Committee Sessions",
-        "11:00 - Coffee Break",
-        "11:30 - Closing Ceremony Preparation",
-        "13:00 - Lunch Break",
-        "14:00 - Closing Ceremony & Awards",
-        "16:00 - Conference Concludes"
+                "Will be revealed soon"
+
+        // "09:00 - Final Committee Sessions",
+        // "11:00 - Coffee Break",
+        // "11:30 - Closing Ceremony Preparation",
+        // "13:00 - Lunch Break",
+        // "14:00 - Closing Ceremony & Awards",
+        // "16:00 - Conference Concludes"
       ]
     }
   ],
@@ -143,14 +159,14 @@ export const MUN_CONSTANTS = {
   // Testimonials
   testimonials: [
     {
-      name: "Sarah Ahmed",
-      role: "Former Delegate, UNSC",
+      name: "M.Huzaifa",
+      role: "Former Delegate, HRC",
       quote: "FICMUN was a transformative experience that taught me the art of diplomacy and negotiation. The quality of debate and the expertise of the chairs made it an unforgettable learning journey.",
       rating: 5
     },
     {
-      name: "Muhammad Hassan",
-      role: "Former Delegate, WHO",
+      name: "Shaheer Raza",
+      role: "Former Delegate, Security Council",
       quote: "The conference provided me with invaluable skills in public speaking and critical thinking. The networking opportunities were exceptional, and I made friends for life.",
       rating: 5
     },
@@ -164,8 +180,8 @@ export const MUN_CONSTANTS = {
   
   // Statistics
   stats: [
-    { number: "200+", label: "Expected Delegates" },
-    { number: "15+", label: "Schools Participating" },
+    { number: "500+", label: "Expected Delegates" },
+    { number: "10+", label: "Schools Participating" },
     { number: "4", label: "Expert Committees" },
     { number: "3", label: "Days of Diplomacy" }
   ]

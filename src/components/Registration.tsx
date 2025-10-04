@@ -58,7 +58,7 @@ export default function Registration() {
           
           {/* What's Included */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
-            <h3 className="text-2xl font-bold text-white mb-6">What's Included</h3>
+            <h3 className="text-2xl font-bold text-white mb-6">What&apos;s Included</h3>
             <div className="space-y-4">
               {MUN_CONSTANTS.registration.includes.map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
