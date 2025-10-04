@@ -55,6 +55,7 @@ interface AdminUser {
 export default function AdminDashboard() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const router = useRouter();
@@ -81,7 +82,11 @@ export default function AdminDashboard() {
     return () => clearInterval(timer);
   }, [router]);
 
-  const fetchStats = async () => {
+  const fetchStats = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    }
+    
     try {
       const response = await fetch('/api/dashboard/stats');
       const data = await response.json();
@@ -91,6 +96,10 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      }
     }
   };
 
@@ -174,10 +183,26 @@ export default function AdminDashboard() {
                 </div>
                 <div className="text-right">
                   <button
-                    onClick={fetchStats}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={() => fetchStats(true)}
+                    disabled={refreshing}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Refresh Data
+                    {refreshing ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh Data
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -350,6 +375,25 @@ export default function AdminDashboard() {
                   <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
                     <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/committees" className="group">
+              <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Committees</h3>
+                    <p className="text-sm text-gray-600">View committees and delegate counts</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Track verified delegates per committee
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-teal-200 transition-colors">
+                    <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
                     </svg>
                   </div>
                 </div>

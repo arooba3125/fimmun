@@ -138,12 +138,12 @@ export const MUN_CONSTANTS = {
   registration: {
     earlyBird: {
       price: "PKR 2,500",
-      deadline: "February 15, 2024",
+      deadline: "February 15, 2025",
       description: "Early bird registration includes all materials, meals, and certificate"
     },
     regular: {
       price: "PKR 3,000",
-      deadline: "March 1, 2024",
+      deadline: "March 1, 2025",
       description: "Regular registration includes all materials, meals, and certificate"
     },
     includes: [

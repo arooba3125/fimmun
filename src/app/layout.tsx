@@ -13,12 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FICMUN 2024 - Fazaia Inter College Minhas Model United Nations",
+  title: "FICMUN 2025 - Fazaia Inter College Minhas Model United Nations",
   description: "Join us for an extraordinary Model United Nations conference that brings together young leaders, diplomats, and change-makers from across the region. Experience the thrill of international diplomacy, engage in meaningful debates, and develop critical thinking skills.",
   keywords: "Model United Nations, MUN, FICMUN, Fazaia Inter College, diplomacy, international relations, debate, leadership",
   authors: [{ name: "FICMUN Organizing Committee" }],
   openGraph: {
-    title: "FICMUN 2024 - Model United Nations Conference",
+    title: "FICMUN 2025 - Model United Nations Conference",
     description: "Diplomacy in Action • Leadership in Practice",
     type: "website",
     locale: "en_US",

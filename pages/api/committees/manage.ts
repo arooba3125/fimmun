@@ -60,8 +60,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           topic: topic || null,
           description: description || null,
           difficulty_level: difficulty_level || 'intermediate',
-          max_delegates: max_delegates || 30,
-          current_delegates: 0,
+          capacity: max_delegates || 30,
+          current_count: 0,
           chair_name: chair_name || null,
           chair_email: chair_email || null,
           is_active: true,
@@ -123,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (topic !== undefined) updateData.topic = topic;
       if (description !== undefined) updateData.description = description;
       if (difficulty_level) updateData.difficulty_level = difficulty_level;
-      if (max_delegates !== undefined) updateData.max_delegates = max_delegates;
+      if (max_delegates !== undefined) updateData.capacity = max_delegates;
       if (chair_name !== undefined) updateData.chair_name = chair_name;
       if (chair_email !== undefined) updateData.chair_email = chair_email;
       if (is_active !== undefined) updateData.is_active = is_active;

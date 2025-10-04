@@ -46,26 +46,6 @@ export default function Testimonials() {
             </div>
           ))}
         </div>
-        
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Ready to Create Your Own Success Story?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Join hundreds of delegates who have transformed their leadership skills and global perspective at FICMUN
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors duration-300 shadow-lg">
-                Register Now
-              </button>
-              <button className="px-8 py-4 border-2 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-600 hover:text-white transition-colors duration-300">
-                Download Brochure
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

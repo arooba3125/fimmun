@@ -1,6 +1,14 @@
+'use client';
+
 import { MUN_CONSTANTS } from '@/lib/constants';
 
 export default function Hero() {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 pt-16">
       {/* Background Pattern */}
@@ -66,11 +74,17 @@ export default function Hero() {
         
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-24">
-          <button className="group px-10 py-5 bg-white text-blue-900 font-bold text-lg rounded-full hover:bg-blue-50 transition-all duration-500 transform hover:scale-110 hover:-translate-y-2 shadow-2xl hover:shadow-blue-300/50 relative overflow-hidden">
+          <button 
+            onClick={() => scrollToSection('registration')}
+            className="group px-10 py-5 bg-white text-blue-900 font-bold text-lg rounded-full hover:bg-blue-50 transition-all duration-500 transform hover:scale-110 hover:-translate-y-2 shadow-2xl hover:shadow-blue-300/50 relative overflow-hidden"
+          >
             <span className="relative z-10">Register Now</span>
             <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
-          <button className="group px-10 py-5 border-3 border-white text-white font-bold text-lg rounded-full hover:bg-white hover:text-blue-900 transition-all duration-500 transform hover:scale-110 hover:-translate-y-2 relative overflow-hidden backdrop-blur-sm">
+          <button 
+            onClick={() => scrollToSection('about')}
+            className="group px-10 py-5 border-3 border-white text-white font-bold text-lg rounded-full hover:bg-white hover:text-blue-900 transition-all duration-500 transform hover:scale-110 hover:-translate-y-2 relative overflow-hidden backdrop-blur-sm"
+          >
             <span className="relative z-10">Learn More</span>
             <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>

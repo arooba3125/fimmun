@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import { handlePrivateDelegateCommitteeCount } from '../../../lib/committeeUtils';
 
 // Generate serial number
 async function generateSerialNumber(supabase: ReturnType<typeof createAdminClient>, prefix: string): Promise<string> {
@@ -64,6 +65,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      // First, get the current delegate data to check committee preferences and previous status
+      const { data: currentDelegate, error: fetchError } = await supabaseAdmin
+        .from('private_delegates')
+        .select('committee_preferences, status')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to fetch private delegate data',
+          details: fetchError.message
+        });
+      }
+
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString()
       };
@@ -89,6 +105,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           error: 'Failed to update private delegate',
           details: updateError.message
         });
+      }
+
+      // Handle committee count updates
+      if (currentDelegate?.committee_preferences && currentDelegate.committee_preferences.length > 0) {
+        const wasVerified = currentDelegate.status === 'verified';
+        const isNowVerified = status === 'verified';
+        
+        // Only update committee count if status actually changed
+        if (wasVerified !== isNowVerified) {
+          await handlePrivateDelegateCommitteeCount(
+            currentDelegate.committee_preferences,
+            isNowVerified
+          );
+        }
       }
 
       return res.status(200).json({

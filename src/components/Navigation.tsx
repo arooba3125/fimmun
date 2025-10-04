@@ -25,7 +25,7 @@ export default function Navigation() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">{MUN_CONSTANTS.shortName}</h1>
-              <p className="text-xs text-gray-500">2024</p>
+              <p className="text-xs text-gray-500">2025</p>
             </div>
           </div>
 
@@ -61,7 +61,10 @@ export default function Navigation() {
             >
               Testimonials
             </button>
-            <button className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors duration-300">
+            <button 
+              onClick={() => scrollToSection('registration')}
+              className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors duration-300"
+            >
               Register Now
             </button>
           </div>
@@ -117,7 +120,10 @@ export default function Navigation() {
               >
                 Testimonials
               </button>
-              <button className="block w-full text-left px-3 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-300">
+              <button 
+                onClick={() => scrollToSection('registration')}
+                className="block w-full text-left px-3 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-300"
+              >
                 Register Now
               </button>
             </div>

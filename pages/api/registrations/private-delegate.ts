@@ -35,9 +35,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const whatsapp = Array.isArray(fields.whatsapp) ? fields.whatsapp[0] : fields.whatsapp;
     const institution = Array.isArray(fields.institution) ? fields.institution[0] : fields.institution;
     const mun_experience = Array.isArray(fields.mun_experience) ? fields.mun_experience[0] : fields.mun_experience;
-    const committee_preferences = Array.isArray(fields.committee_preferences) 
-      ? JSON.parse(fields.committee_preferences[0] || '[]') 
-      : JSON.parse(fields.committee_preferences || '[]');
+    // Handle both committee_preference (singular) and committee_preferences (plural)
+    let committee_preferences = [];
+    
+    if (fields.committee_preferences) {
+      // If committee_preferences is provided (array format)
+      committee_preferences = Array.isArray(fields.committee_preferences) 
+        ? JSON.parse(fields.committee_preferences[0] || '[]') 
+        : JSON.parse(fields.committee_preferences || '[]');
+    } else if (fields.committee_preference) {
+      // If committee_preference is provided (single value)
+      const committee_preference = Array.isArray(fields.committee_preference) 
+        ? fields.committee_preference[0] 
+        : fields.committee_preference;
+      committee_preferences = [committee_preference]; // Convert to array
+    }
 
     // Handle file upload
     let payment_proof_url = null;

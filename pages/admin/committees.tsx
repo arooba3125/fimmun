@@ -12,6 +12,8 @@ interface Committee {
   difficulty_level: 'beginner' | 'intermediate' | 'advanced' | null;
   max_delegates: number;
   current_delegates: number;
+  capacity: number;
+  current_count: number;
   chair_name: string | null;
   chair_email: string | null;
   is_active: boolean;
@@ -22,6 +24,7 @@ interface Committee {
 export default function AdminCommittees() {
   const [committees, setCommittees] = useState<Committee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [, setShowAddModal] = useState(false);
   const [, setEditingCommittee] = useState<Committee | null>(null);
   const router = useRouter();
@@ -35,7 +38,13 @@ export default function AdminCommittees() {
     fetchCommittees();
   }, [router]);
 
-  const fetchCommittees = async () => {
+  const fetchCommittees = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const response = await fetch('/api/committees/manage');
       const data = await response.json();
@@ -51,6 +60,7 @@ export default function AdminCommittees() {
       setCommittees([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -73,6 +83,36 @@ export default function AdminCommittees() {
     } catch (error) {
       console.error('Error deleting committee:', error);
       alert('Failed to delete committee');
+    }
+  };
+
+  const refreshCommitteeCounts = async () => {
+    setRefreshing(true);
+    
+    try {
+      // First, recalculate committee counts
+      const recalcResponse = await fetch('/api/admin/recalculate-committee-counts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const recalcData = await recalcResponse.json();
+      
+      if (recalcData.success) {
+        // Then refresh the committees list
+        await fetchCommittees();
+        console.log('Committee counts refreshed successfully');
+      } else {
+        console.error('Failed to recalculate counts:', recalcData.error);
+        // Still refresh the list even if recalculation fails
+        await fetchCommittees();
+      }
+    } catch (error) {
+      console.error('Error refreshing committee counts:', error);
+      // Still refresh the list even if there's an error
+      await fetchCommittees();
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -109,22 +149,87 @@ export default function AdminCommittees() {
                   <p className="text-sm text-gray-500">Manage committees and their details</p>
                 </div>
           </div>
-                      <button
-                onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                disabled
-                title="Feature coming soon"
-              >
-                Add Committee
-                    </button>
             </div>
               </div>
         </header>
 
         <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Committees</p>
+                  <p className="text-3xl font-bold text-blue-600">{committees.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Delegates</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {committees.reduce((sum, committee) => sum + (committee.current_count || committee.current_delegates || 0), 0)}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Capacity</p>
+                  <p className="text-3xl font-bold text-purple-600">
+                    {committees.reduce((sum, committee) => sum + (committee.capacity || committee.max_delegates || 0), 0)}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg">
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Committees ({committees.length})</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Committees ({committees.length})</h3>
+                <button
+                  onClick={() => refreshCommitteeCounts()}
+                  disabled={refreshing}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {refreshing ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Refreshing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refresh
+                    </>
+                  )}
+                </button>
+              </div>
 
             {committees.length === 0 ? (
                 <div className="text-center py-12">
@@ -163,9 +268,28 @@ export default function AdminCommittees() {
                     {committee.chair_name && (
                             <p className="text-sm text-gray-600 mb-2">Chair: {committee.chair_name}</p>
                           )}
-                          <p className="text-sm text-gray-500">
-                            Delegates: {committee.current_delegates}/{committee.max_delegates}
-                          </p>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-1">
+                              <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                              </svg>
+                              <span className="text-gray-600">
+                                Delegates: <span className="font-semibold text-blue-600">{committee.current_count || committee.current_delegates}</span>/{committee.capacity || committee.max_delegates}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className={`w-2 h-2 rounded-full ${
+                                (committee.current_count || committee.current_delegates) >= (committee.capacity || committee.max_delegates) 
+                                  ? 'bg-red-500' 
+                                  : (committee.current_count || committee.current_delegates) >= (committee.capacity || committee.max_delegates) * 0.8 
+                                    ? 'bg-yellow-500' 
+                                    : 'bg-green-500'
+                              }`}></div>
+                              <span className="text-xs text-gray-500">
+                                {Math.round(((committee.current_count || committee.current_delegates) / (committee.capacity || committee.max_delegates)) * 100)}% full
+                              </span>
+                            </div>
+                          </div>
                   </div>
                         <div className="flex items-center gap-2">
                     <button
