@@ -1,22 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, Committee } from '../../lib/supabaseClient';
 import { MUN_CONSTANTS } from '../lib/constants';
-
-interface Committee {
-  id: string;
-  name: string;
-  short_name: string | null;
-  topic: string | null;
-  description: string | null;
-  difficulty_level: 'beginner' | 'intermediate' | 'advanced' | null;
-  max_delegates: number;
-  current_delegates: number;
-  chair_name: string | null;
-  chair_email: string | null;
-  is_active: boolean;
-}
 
 export default function Committees() {
   const [committees, setCommittees] = useState<Committee[]>([]);
@@ -31,7 +17,6 @@ export default function Committees() {
       const { data, error } = await supabase
         .from('committees')
         .select('*')
-        .eq('is_active', true)
         .order('created_at');
       
       if (error) throw error;
@@ -42,15 +27,11 @@ export default function Committees() {
       setCommittees(MUN_CONSTANTS.committees.map((committee, index) => ({
         id: index.toString(),
         name: committee.name,
-        short_name: null,
-        topic: committee.topic,
-        description: null,
-        difficulty_level: committee.difficulty.toLowerCase() as 'beginner' | 'intermediate' | 'advanced',
-        max_delegates: 30,
-        current_delegates: 0,
-        chair_name: null,
-        chair_email: null,
-        is_active: true,
+        description: committee.topic,
+        capacity: 30,
+        current_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })));
     }
     setLoading(false);
@@ -90,24 +71,13 @@ export default function Committees() {
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
                       {committee.name}
                     </h3>
-                    {committee.short_name && (
-                      <p className="text-blue-600 font-semibold text-sm mb-2">
-                        {committee.short_name}
-                      </p>
-                    )}
                     <p className="text-blue-600 font-semibold mb-4">
-                      {committee.topic || 'Topic will be announced soon'}
+                      {committee.description || 'Description will be announced soon'}
                     </p>
                   </div>
                   <div className="ml-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      committee.difficulty_level === 'advanced' 
-                        ? 'bg-red-100 text-red-800' 
-                        : committee.difficulty_level === 'intermediate'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {committee.difficulty_level ? committee.difficulty_level.charAt(0).toUpperCase() + committee.difficulty_level.slice(1) : 'Not Set'}
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      Active
                     </span>
                   </div>
                 </div>
@@ -126,16 +96,17 @@ export default function Committees() {
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="text-sm text-gray-600">
-                      Max Delegates: {committee.max_delegates}
+                      Capacity: {committee.capacity}
                     </span>
                   </div>
-                  {committee.chair_name && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">
-                        Chair: {committee.chair_name}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">
+                      Current: {committee.current_count}
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="space-y-3">

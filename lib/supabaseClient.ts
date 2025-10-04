@@ -33,15 +33,9 @@ export const createAdminClient = () => {
 export interface Committee {
   id: string;
   name: string;
-  short_name: string | null;
-  topic: string | null;
   description: string | null;
-  difficulty_level: 'beginner' | 'intermediate' | 'advanced' | null;
-  max_delegates: number;
-  current_delegates: number;
-  chair_name: string | null;
-  chair_email: string | null;
-  is_active: boolean;
+  capacity: number;
+  current_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -51,22 +45,105 @@ export interface Feature {
   title: string;
   description: string | null;
   icon: string | null;
-  image_url: string | null;
-  is_active: boolean;
-  display_order: number;
+  order_index: number;
   created_at: string;
   updated_at: string;
 }
 
-
 export interface AdminUser {
   id: string;
+  name: string;
   email: string;
   password_hash: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Registration Interfaces
+export interface PrivateDelegate {
+  id: string;
   name: string;
-  role: 'admin' | 'super_admin';
-  is_active: boolean;
-  last_login: string | null;
+  email: string;
+  whatsapp: string;
+  institution: string;
+  mun_experience: string | null;
+  committee_preferences: string[];
+  payment_proof_url: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  serial_number: string | null;
+  verification_code: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Observer {
+  id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  institution: string;
+  mun_experience: string | null;
+  payment_proof_url: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  serial_number: string | null;
+  verification_code: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Alumni {
+  id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  batch: string;
+  payment_proof_url: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  serial_number: string | null;
+  verification_code: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Delegation {
+  id: string;
+  delegation_name: string;
+  delegation_serial: string;
+  committee_preferences: string[];
+  head_delegate_name: string;
+  head_delegate_email: string;
+  head_delegate_whatsapp: string;
+  head_delegate_institution: string;
+  head_delegate_experience: string | null;
+  payment_proof_url: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DelegationMember {
+  id: string;
+  delegation_id: string;
+  delegation_serial: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  institution: string;
+  mun_experience: string | null;
+  committee_preference: string;
+  payment_proof_url: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  serial_number: string | null;
+  verification_code: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RegistrationCap {
+  id: string;
+  category: string;
+  max_capacity: number;
+  current_count: number;
   created_at: string;
   updated_at: string;
 }

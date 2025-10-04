@@ -1,18 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, Feature } from '../../lib/supabaseClient';
 import { MUN_CONSTANTS } from '@/lib/constants';
-
-interface Feature {
-  id: string;
-  title: string;
-  description: string | null;
-  icon: string | null;
-  image_url: string | null;
-  is_active: boolean;
-  display_order: number;
-}
 
 export default function About() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -27,8 +17,7 @@ export default function About() {
       const { data, error } = await supabase
         .from('features')
         .select('*')
-        .eq('is_active', true)
-        .order('display_order');
+        .order('order_index', { ascending: true });
       
       if (error) throw error;
       setFeatures(data || []);
@@ -40,9 +29,9 @@ export default function About() {
         title: feature.title,
         description: feature.description,
         icon: feature.icon,
-        image_url: null,
-        is_active: true,
-        display_order: index,
+        order_index: index,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })));
     }
     setLoading(false);
