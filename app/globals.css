@@ -25,6 +25,26 @@ body {
   line-height: 1.6;
 }
 
+/* Input field text color fix */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="url"],
+textarea,
+select {
+  color: #000000 !important;
+}
+
+/* Input field placeholder color */
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important;
+}
+
 /* Glassmorphism support */
 .backdrop-blur-lg {
   backdrop-filter: blur(16px);
