@@ -1,8 +1,58 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
+// Helper function to verify admin token
+function verifyAdminToken(req: NextApiRequest): { isValid: boolean; adminId?: string; error?: string } {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { isValid: false, error: 'No authorization token provided' };
+  }
+
+  const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+  
+  try {
+    const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET || 'fallback-secret') as JwtPayload;
+    return { isValid: true, adminId: decoded.id };
+  } catch (error) {
+    return { isValid: false, error: 'Invalid or expired token' };
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabaseAdmin = createAdminClient();
+  console.log('Committee API request:', {
+    method: req.method,
+    headers: {
+      authorization: req.headers.authorization ? 'present' : 'missing',
+      contentType: req.headers['content-type']
+    },
+    body: req.body
+  });
+
+  // Verify admin authentication for all methods except GET
+  if (req.method !== 'GET') {
+    const authResult = verifyAdminToken(req);
+    console.log('Auth verification result:', authResult);
+    
+    if (!authResult.isValid) {
+      return res.status(401).json({
+        success: false,
+        error: authResult.error || 'Authentication required'
+      });
+    }
+  }
+
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = createAdminClient();
+  } catch (error) {
+    console.error('Supabase client creation error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Database connection failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 
   if (req.method === 'GET') {
     // Get all committees
@@ -38,13 +88,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create new committee
     const { 
       name, 
-      short_name, 
-      topic, 
       description, 
-      difficulty_level, 
-      max_delegates, 
-      chair_name, 
-      chair_email 
+      capacity 
     } = req.body;
 
     if (!name) {
@@ -52,24 +97,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const { data: newCommittee, error: insertError } = await supabaseAdmin
+      const { data: newCommittees, error: insertError } = await supabaseAdmin
         .from('committees')
         .insert({
           name,
-          short_name: short_name || null,
-          topic: topic || null,
           description: description || null,
-          difficulty_level: difficulty_level || 'intermediate',
-          capacity: max_delegates || 30,
+          capacity: capacity || 30,
           current_count: 0,
-          chair_name: chair_name || null,
-          chair_email: chair_email || null,
-          is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .select()
-        .single();
+        .select();
 
       if (insertError) {
         return res.status(500).json({
@@ -78,6 +116,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           details: insertError.message
         });
       }
+
+      if (!newCommittees || newCommittees.length === 0) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to create committee',
+          details: 'No committee was created'
+        });
+      }
+
+      const newCommittee = newCommittees[0];
 
       return res.status(201).json({
         success: true,
@@ -99,14 +147,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { 
       id, 
       name, 
-      short_name, 
-      topic, 
       description, 
-      difficulty_level, 
-      max_delegates, 
-      chair_name, 
-      chair_email,
-      is_active
+      capacity
     } = req.body;
 
     if (!id) {
@@ -119,29 +161,74 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
 
       if (name) updateData.name = name;
-      if (short_name !== undefined) updateData.short_name = short_name;
-      if (topic !== undefined) updateData.topic = topic;
       if (description !== undefined) updateData.description = description;
-      if (difficulty_level) updateData.difficulty_level = difficulty_level;
-      if (max_delegates !== undefined) updateData.capacity = max_delegates;
-      if (chair_name !== undefined) updateData.chair_name = chair_name;
-      if (chair_email !== undefined) updateData.chair_email = chair_email;
-      if (is_active !== undefined) updateData.is_active = is_active;
+      if (capacity !== undefined) updateData.capacity = capacity;
 
-      const { data: updatedCommittee, error: updateError } = await supabaseAdmin
+      // First, check if the committee exists (use array instead of single to avoid RLS issues)
+      const { data: existingCommittees, error: findError } = await supabaseAdmin
+        .from('committees')
+        .select('id, name')
+        .eq('id', id);
+
+      console.log('Existing committee check:', { existingCommittees, findError, id });
+
+      if (findError || !existingCommittees || existingCommittees.length === 0) {
+        // Debug: Check if any committees exist at all
+        const { data: allCommittees } = await supabaseAdmin
+          .from('committees')
+          .select('id, name')
+          .limit(5);
+        
+        return res.status(404).json({
+          success: false,
+          error: 'Committee not found',
+          details: `No committee found with ID: ${id}`,
+          debug: {
+            requestedId: id,
+            findError: findError?.message,
+            totalCommitteesInDB: allCommittees?.length || 0,
+            sampleCommitteeIds: allCommittees?.map(c => c.id) || [],
+            sampleCommitteeNames: allCommittees?.map(c => c.name) || []
+          }
+        });
+      }
+
+      const existingCommittee = existingCommittees[0];
+
+      const { data: updatedCommittees, error: updateError } = await supabaseAdmin
         .from('committees')
         .update(updateData)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (updateError) {
+        console.error('Committee update error:', updateError);
         return res.status(500).json({
           success: false,
           error: 'Failed to update committee',
-          details: updateError.message
+          details: updateError.message,
+          debug: {
+            updateData,
+            id,
+            errorCode: updateError.code
+          }
         });
       }
+
+      if (!updatedCommittees || updatedCommittees.length === 0) {
+        return res.status(500).json({
+          success: false,
+          error: 'Update operation failed',
+          details: `Committee exists but update returned no results for ID: ${id}`,
+          debug: {
+            requestedId: id,
+            updateData,
+            existingCommittee
+          }
+        });
+      }
+
+      const updatedCommittee = updatedCommittees[0];
 
       return res.status(200).json({
         success: true,
@@ -160,6 +247,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'DELETE') {
     // Delete committee
+    // Note: Authentication already verified at the top of the function
+
     const { id } = req.body;
 
     if (!id) {

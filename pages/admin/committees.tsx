@@ -25,8 +25,13 @@ export default function AdminCommittees() {
   const [committees, setCommittees] = useState<Committee[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [, setShowAddModal] = useState(false);
-  const [, setEditingCommittee] = useState<Committee | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCommittee, setEditingCommittee] = useState<Committee | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    capacity: 30
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -68,22 +73,117 @@ export default function AdminCommittees() {
     if (!confirm('Are you sure you want to delete this committee?')) return;
     
     try {
+      const token = localStorage.getItem('adminToken');
+      console.log('Delete token check:', { token: token ? 'present' : 'missing', tokenLength: token?.length });
+      
+      if (!token) {
+        alert('Authentication required. Please log in again.');
+        router.push('/admin');
+        return;
+      }
+
+      const requestHeaders = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+      
+      console.log('Delete request headers:', requestHeaders);
+      console.log('Delete request body:', { id });
+
       const response = await fetch('/api/committees/manage', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: requestHeaders,
         body: JSON.stringify({ id })
       });
 
       const data = await response.json();
+      console.log('Delete committee response:', data);
+      
       if (data.success) {
         fetchCommittees();
       } else {
-        alert('Failed to delete committee: ' + data.error);
+        console.error('Delete committee error:', data);
+        alert('Failed to delete committee: ' + data.error + (data.details ? '\nDetails: ' + data.details : ''));
       }
     } catch (error) {
       console.error('Error deleting committee:', error);
       alert('Failed to delete committee');
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        alert('Authentication required. Please log in again.');
+        router.push('/admin');
+        return;
+      }
+
+      const url = '/api/committees/manage';
+      const method = editingCommittee ? 'PUT' : 'POST';
+      
+      // Map frontend fields to database fields
+      const body = editingCommittee 
+        ? { 
+            id: editingCommittee.id, 
+            name: formData.name,
+            description: formData.description || null,
+            capacity: formData.capacity
+          }
+        : {
+            name: formData.name,
+            description: formData.description || null,
+            capacity: formData.capacity
+          };
+
+      console.log('Committee request:', {
+        method,
+        editingCommittee: editingCommittee?.id,
+        body
+      });
+
+      const response = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await response.json();
+      console.log('Committee API response:', data);
+      
+      if (data.success) {
+        setShowAddModal(false);
+        setEditingCommittee(null);
+        setFormData({
+          name: '',
+          description: '',
+          capacity: 30
+        });
+        fetchCommittees();
+      } else {
+        console.error('Committee save error:', data);
+        alert('Failed to save committee: ' + data.error + (data.details ? '\nDetails: ' + data.details : ''));
+      }
+    } catch (error) {
+      console.error('Error saving committee:', error);
+      alert('Failed to save committee');
+    }
+  };
+
+  const handleEdit = (committee: Committee) => {
+    setEditingCommittee(committee);
+    setFormData({
+      name: committee.name,
+      description: committee.description || '',
+      capacity: committee.capacity || 30
+    });
+    setShowAddModal(true);
   };
 
   const refreshCommitteeCounts = async () => {
@@ -207,28 +307,30 @@ export default function AdminCommittees() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">Committees ({committees.length})</h3>
-                <button
-                  onClick={() => refreshCommitteeCounts()}
-                  disabled={refreshing}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {refreshing ? (
-                    <>
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Refresh
-                    </>
-                  )}
-                </button>
+                 <div className="flex items-center gap-3">
+                   <button
+                    onClick={() => refreshCommitteeCounts()}
+                    disabled={refreshing}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {refreshing ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
             {committees.length === 0 ? (
@@ -293,10 +395,8 @@ export default function AdminCommittees() {
                   </div>
                         <div className="flex items-center gap-2">
                     <button
-                            onClick={() => setEditingCommittee(committee)}
+                            onClick={() => handleEdit(committee)}
                             className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                            disabled
-                            title="Feature coming soon"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -319,6 +419,81 @@ export default function AdminCommittees() {
                     </div>
               </div>
         </main>
+
+        {/* Add/Edit Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                {editingCommittee ? 'Edit Committee' : 'Add New Committee'}
+              </h2>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Committee Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Capacity
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.capacity}
+                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddModal(false);
+                      setEditingCommittee(null);
+                      setFormData({
+                        name: '',
+                        description: '',
+                        capacity: 30
+                      });
+                    }}
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {editingCommittee ? 'Update Committee' : 'Create Committee'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
