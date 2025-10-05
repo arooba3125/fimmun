@@ -399,6 +399,25 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
+
+            <Link href="/admin/timeline" className="group">
+              <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Timeline</h3>
+                    <p className="text-sm text-gray-600">Manage conference schedule and events</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Create and edit timeline events
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                    <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
 
           {/* Recent Registrations */}

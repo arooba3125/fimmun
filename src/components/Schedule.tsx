@@ -1,6 +1,64 @@
-import { MUN_CONSTANTS } from '@/lib/constants';
+// src/components/Schedule.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+
+interface TimelineEvent {
+  day_number: number;
+  date: string;
+  title: string;
+  description?: string;
+  start_time?: string;
+  end_time?: string;
+  location?: string;
+  event_type: string;
+}
+
+interface TimelineDay {
+  day_number: number;
+  date: string;
+  events: TimelineEvent[];
+}
 
 export default function Schedule() {
+  const [timeline, setTimeline] = useState<TimelineDay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTimeline();
+  }, []);
+
+  const fetchTimeline = async () => {
+    try {
+      const response = await fetch('/api/timeline/public');
+      const data = await response.json();
+      
+      if (data.success) {
+        setTimeline(data.timeline);
+      } else {
+        setError(data.error || 'Failed to fetch timeline');
+      }
+    } catch (err) {
+      setError('Failed to fetch timeline');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section id="schedule" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading schedule...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="schedule" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,79 +72,71 @@ export default function Schedule() {
           </p>
         </div>
         
-        <div className="space-y-8">
-          {MUN_CONSTANTS.schedule.map((day, dayIndex) => (
-            <div key={dayIndex} className="bg-gray-50 rounded-2xl p-8">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{dayIndex + 1}</span>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">{day.day}</h3>
-                  <p className="text-gray-600">Full day of committee sessions and activities</p>
-                </div>
-              </div>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {day.events.map((event, eventIndex) => (
-                  <div key={eventIndex} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <div className="flex items-start gap-3">
-                      <div className="w-3 h-3 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {event.split(' - ')[0]}
-                        </p>
-                        <p className="text-gray-600 text-sm mt-1">
-                          {event.split(' - ')[1]}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Additional Info */}
-        <div className="mt-12 bg-blue-50 rounded-2xl p-8">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              What to Expect
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Networking</h4>
-                <p className="text-gray-600 text-sm">Connect with delegates from across the region</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Learning</h4>
-                <p className="text-gray-600 text-sm">Develop diplomatic and leadership skills</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Achievement</h4>
-                <p className="text-gray-600 text-sm">Earn certificates and recognition</p>
-              </div>
+        {error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">Failed to load schedule</p>
+            <button 
+              onClick={fetchTimeline}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : timeline.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">Schedule will be revealed soon</p>
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-lg">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+              <span className="text-blue-600 text-sm">Will be revealed soon</span>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-8">
+            {timeline.map((day) => (
+              <div key={day.day_number} className="bg-gray-50 rounded-2xl p-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">{day.day_number}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">Day {day.day_number} - {day.date}</h3>
+                    <p className="text-gray-600">Full day of committee sessions and activities</p>
+                  </div>
+                </div>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {day.events.map((event, eventIndex) => (
+                    <div key={eventIndex} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300">
+                      <div className="flex items-start gap-3">
+                        <div className="w-3 h-3 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-sm mb-1">
+                            {event.title}
+                          </p>
+                          {event.description && (
+                            <p className="text-gray-600 text-xs mb-2">
+                              {event.description}
+                            </p>
+                          )}
+                          {event.start_time && event.end_time && (
+                            <p className="text-blue-600 text-xs font-medium">
+                              {event.start_time} - {event.end_time}
+                            </p>
+                          )}
+                          {event.location && (
+                            <p className="text-gray-500 text-xs">
+                              📍 {event.location}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

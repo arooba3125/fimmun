@@ -147,3 +147,18 @@ export interface RegistrationCap {
   created_at: string;
   updated_at: string;
 }
+
+export interface TimelineEvent {
+  id: string;
+  day_number: number;
+  date: string;
+  title: string;
+  description: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  event_type: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
