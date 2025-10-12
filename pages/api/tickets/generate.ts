@@ -6,6 +6,8 @@ interface TicketData {
   serial_number: string;
   registration_type: string;
   committee: string | null;
+  committees: string[];
+  cnic: string | null;
   event: string;
   date: string;
   location: string;
@@ -32,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'private-delegate': {
         const { data, error } = await supabaseAdmin
           .from('private_delegates')
-          .select('full_name, serial_number, committee_preferences')
+          .select('name, serial_number, committee_preferences, cnic')
           .eq('id', id)
           .eq('status', 'verified')
           .single();
@@ -42,10 +44,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         ticketData = {
-          name: data.full_name,
+          name: data.name,
           serial_number: data.serial_number,
           registration_type: 'Private Delegate',
           committee: data.committee_preferences?.[0] || null,
+          committees: data.committee_preferences || [],
+          cnic: data.cnic || null,
           event: 'FIMMUN 2025',
           date: 'TBD', // You can update this with actual event dates
           location: 'Forman Christian College, Lahore'
@@ -56,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'delegation-member': {
         const { data, error } = await supabaseAdmin
           .from('delegation_members')
-          .select('full_name, serial_number, committee_preference')
+          .select('name, serial_number, committee_preference, cnic')
           .eq('id', id)
           .eq('status', 'verified')
           .single();
@@ -66,10 +70,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         ticketData = {
-          name: data.full_name,
+          name: data.name,
           serial_number: data.serial_number,
           registration_type: 'Delegation Member',
           committee: data.committee_preference || null,
+          committees: data.committee_preference ? [data.committee_preference] : [],
+          cnic: data.cnic || null,
           event: 'FIMMUN 2025',
           date: 'TBD',
           location: 'Forman Christian College, Lahore'
@@ -80,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'observer': {
         const { data, error } = await supabaseAdmin
           .from('observers')
-          .select('full_name, serial_number')
+          .select('name, serial_number, cnic')
           .eq('id', id)
           .eq('status', 'verified')
           .single();
@@ -90,10 +96,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         ticketData = {
-          name: data.full_name,
+          name: data.name,
           serial_number: data.serial_number,
           registration_type: 'Observer',
           committee: 'All Sessions',
+          committees: ['All Sessions'],
+          cnic: data.cnic || null,
           event: 'FIMMUN 2025',
           date: 'TBD',
           location: 'Forman Christian College, Lahore'
@@ -104,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'alumni': {
         const { data, error } = await supabaseAdmin
           .from('alumni')
-          .select('full_name, serial_number')
+          .select('name, serial_number, cnic')
           .eq('id', id)
           .eq('status', 'verified')
           .single();
@@ -114,10 +122,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         ticketData = {
-          name: data.full_name,
+          name: data.name,
           serial_number: data.serial_number,
           registration_type: 'Alumni',
           committee: 'Alumni Events',
+          committees: ['Alumni Events'],
+          cnic: data.cnic || null,
           event: 'FIMMUN 2025',
           date: 'TBD',
           location: 'Forman Christian College, Lahore'

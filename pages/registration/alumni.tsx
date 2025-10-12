@@ -6,6 +6,7 @@ interface FormData {
   name: string;
   email: string;
   whatsapp: string;
+  cnic: string;
   batch: string;
   referral_source_id: string;
   payment_proof: File | null;
@@ -21,6 +22,7 @@ export default function AlumniRegistration() {
     name: '',
     email: '',
     whatsapp: '',
+    cnic: '',
     batch: '',
     referral_source_id: '',
     payment_proof: null
@@ -71,7 +73,7 @@ export default function AlumniRegistration() {
     setError('');
 
     // Validation
-    if (!formData.name || !formData.email || !formData.whatsapp || !formData.batch || !formData.payment_proof || !formData.referral_source_id) {
+    if (!formData.name || !formData.email || !formData.whatsapp || !formData.cnic || !formData.batch || !formData.payment_proof || !formData.referral_source_id) {
       setError('All required fields must be filled');
       setLoading(false);
       return;
@@ -83,6 +85,7 @@ export default function AlumniRegistration() {
       submitData.append('name', formData.name);
       submitData.append('email', formData.email);
       submitData.append('whatsapp', formData.whatsapp);
+      submitData.append('cnic', formData.cnic);
       submitData.append('batch', formData.batch);
       submitData.append('referral_source_id', formData.referral_source_id);
       submitData.append('payment_proof', formData.payment_proof);
@@ -261,23 +264,39 @@ export default function AlumniRegistration() {
                 </div>
 
                 <div>
-                  <label htmlFor="batch" className="block text-sm font-medium text-gray-700 mb-2">
-                    Batch *
+                  <label htmlFor="cnic" className="block text-sm font-medium text-gray-700 mb-2">
+                    CNIC *
                   </label>
                   <input
                     type="text"
-                    id="batch"
-                    name="batch"
-                    value={formData.batch}
+                    id="cnic"
+                    name="cnic"
+                    value={formData.cnic}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., 2020-2024"
+                    placeholder="xxxxx-xxxxxxx-x"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter your graduation batch years
-                  </p>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="batch" className="block text-sm font-medium text-gray-700 mb-2">
+                  Batch *
+                </label>
+                <input
+                  type="text"
+                  id="batch"
+                  name="batch"
+                  value={formData.batch}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., 2020-2024"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter your graduation batch years
+                </p>
               </div>
 
               {/* Referral Source */}

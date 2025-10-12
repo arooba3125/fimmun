@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
     const email = Array.isArray(fields.email) ? fields.email[0] : fields.email;
     const whatsapp = Array.isArray(fields.whatsapp) ? fields.whatsapp[0] : fields.whatsapp;
+    const cnic = Array.isArray(fields.cnic) ? fields.cnic[0] : fields.cnic;
     const batch = Array.isArray(fields.batch) ? fields.batch[0] : fields.batch;
     const referral_source_id = Array.isArray(fields.referral_source_id) ? fields.referral_source_id[0] : fields.referral_source_id;
 
@@ -68,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validation
-    if (!name || !email || !whatsapp || !batch || !referral_source_id) {
+    if (!name || !email || !whatsapp || !cnic || !batch || !referral_source_id) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
@@ -113,6 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name,
         email,
         whatsapp,
+        cnic,
         batch,
         payment_proof_url,
         referral_source_id,

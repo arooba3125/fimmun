@@ -8,6 +8,7 @@ interface FormData {
   head_delegate_name: string;
   head_delegate_email: string;
   head_delegate_whatsapp: string;
+  head_delegate_cnic: string;
   head_delegate_institution: string;
   head_delegate_experience: string;
   referral_source_id: string;
@@ -36,6 +37,7 @@ export default function DelegationRegistration() {
     head_delegate_name: '',
     head_delegate_email: '',
     head_delegate_whatsapp: '',
+    head_delegate_cnic: '',
     head_delegate_institution: '',
     head_delegate_experience: '',
     referral_source_id: '',
@@ -96,7 +98,7 @@ export default function DelegationRegistration() {
 
     // Validation
     if (!formData.delegation_name || !formData.head_delegate_name || !formData.head_delegate_email || 
-        !formData.head_delegate_whatsapp || !formData.head_delegate_institution || !formData.payment_proof || 
+        !formData.head_delegate_whatsapp || !formData.head_delegate_cnic || !formData.head_delegate_institution || !formData.payment_proof || 
         !formData.referral_source_id) {
       setError('All required fields must be filled');
       setLoading(false);
@@ -117,6 +119,7 @@ export default function DelegationRegistration() {
       submitData.append('head_delegate_name', formData.head_delegate_name);
       submitData.append('head_delegate_email', formData.head_delegate_email);
       submitData.append('head_delegate_whatsapp', formData.head_delegate_whatsapp);
+      submitData.append('head_delegate_cnic', formData.head_delegate_cnic);
       submitData.append('head_delegate_institution', formData.head_delegate_institution);
       submitData.append('head_delegate_experience', formData.head_delegate_experience);
       submitData.append('referral_source_id', formData.referral_source_id);
@@ -358,17 +361,34 @@ export default function DelegationRegistration() {
                   </div>
 
                   <div>
-                    <label htmlFor="head_delegate_institution" className="block text-sm font-medium text-gray-700 mb-2">
-                      Head Delegate Institution *
+                    <label htmlFor="head_delegate_cnic" className="block text-sm font-medium text-gray-700 mb-2">
+                      Head Delegate CNIC *
                     </label>
                     <input
                       type="text"
-                      id="head_delegate_institution"
-                      name="head_delegate_institution"
-                      value={formData.head_delegate_institution}
+                      id="head_delegate_cnic"
+                      name="head_delegate_cnic"
+                      value={formData.head_delegate_cnic}
                       onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="xxxxx-xxxxxxx-x"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="head_delegate_institution" className="block text-sm font-medium text-gray-700 mb-2">
+                    Head Delegate Institution *
+                  </label>
+                  <input
+                    type="text"
+                    id="head_delegate_institution"
+                    name="head_delegate_institution"
+                    value={formData.head_delegate_institution}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter head delegate institution"
                     />
                   </div>

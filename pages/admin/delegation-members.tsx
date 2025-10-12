@@ -10,6 +10,7 @@ interface DelegationMember {
   name: string;
   email: string;
   whatsapp: string;
+  cnic: string | null;
   institution: string;
   mun_experience: string | null;
   committee_preference: string;
@@ -219,6 +220,7 @@ export default function AdminDelegationMembers() {
                       </div>
                       <div className="mt-2 text-sm text-gray-600">
                         <p>WhatsApp: {member.whatsapp}</p>
+                        {member.cnic && <p>CNIC: {member.cnic}</p>}
                         <p>Verification Code: {member.verification_code}</p>
                         <p>Registered: {new Date(member.created_at).toLocaleDateString()}</p>
                       </div>

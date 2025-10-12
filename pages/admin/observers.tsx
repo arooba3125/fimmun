@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 interface Observer {
   id: string;
   name: string;
   email: string;
   whatsapp: string;
+  cnic: string | null;
   institution: string;
   mun_experience: string | null;
   payment_proof_url: string | null;
@@ -106,6 +108,36 @@ export default function AdminObservers() {
     }
   };
 
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = filteredObservers.map((observer) => ({
+      'Serial Number': observer.serial_number || 'N/A',
+      'Name': observer.name,
+      'Email': observer.email,
+      'WhatsApp': observer.whatsapp,
+      'CNIC': observer.cnic || 'N/A',
+      'Institution': observer.institution,
+      'MUN Experience': observer.mun_experience || 'N/A',
+      'Status': observer.status.toUpperCase(),
+      'Verification Code': observer.verification_code,
+      'Registered Date': new Date(observer.created_at).toLocaleDateString(),
+      'Updated Date': new Date(observer.updated_at).toLocaleDateString(),
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Observers');
+    
+    // Generate filename with current date
+    const filename = `observers_${filter}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    // Download file
+    XLSX.writeFile(workbook, filename);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -147,9 +179,20 @@ export default function AdminObservers() {
 
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Manage Observers</h1>
-            <p className="mt-2 text-gray-600">Review and manage observer registrations</p>
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Manage Observers</h1>
+              <p className="mt-2 text-gray-600">Review and manage observer registrations</p>
+            </div>
+            <button
+              onClick={exportToExcel}
+              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download Excel
+            </button>
           </div>
 
           {/* Filter Tabs */}
@@ -204,6 +247,7 @@ export default function AdminObservers() {
                       </div>
                       <div className="mt-2 text-sm text-gray-600">
                         <p>WhatsApp: {observer.whatsapp}</p>
+                        {observer.cnic && <p>CNIC: {observer.cnic}</p>}
                         <p>Verification Code: {observer.verification_code}</p>
                         <p>Registered: {new Date(observer.created_at).toLocaleDateString()}</p>
                       </div>

@@ -7,6 +7,7 @@ interface FormData {
   name: string;
   email: string;
   whatsapp: string;
+  cnic: string;
   institution: string;
   mun_experience: string;
   committee_preference: string;
@@ -27,6 +28,7 @@ export default function DelegationMemberRegistration() {
     name: '',
     email: '',
     whatsapp: '',
+    cnic: '',
     institution: '',
     mun_experience: '',
     committee_preference: '',
@@ -122,7 +124,7 @@ export default function DelegationMemberRegistration() {
 
     // Validation
     if (!formData.delegation_serial || !formData.name || !formData.email || 
-        !formData.whatsapp || !formData.institution || !formData.payment_proof) {
+        !formData.whatsapp || !formData.cnic || !formData.institution || !formData.payment_proof) {
       setError('All required fields must be filled');
       setLoading(false);
       return;
@@ -141,6 +143,7 @@ export default function DelegationMemberRegistration() {
       submitData.append('name', formData.name);
       submitData.append('email', formData.email);
       submitData.append('whatsapp', formData.whatsapp);
+      submitData.append('cnic', formData.cnic);
       submitData.append('institution', formData.institution);
       submitData.append('mun_experience', formData.mun_experience);
       submitData.append('committee_preference', formData.committee_preference);
@@ -337,18 +340,35 @@ export default function DelegationMemberRegistration() {
                 </div>
 
                 <div>
-                  <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-2">
-                    Current Institution *
+                  <label htmlFor="cnic" className="block text-sm font-medium text-gray-700 mb-2">
+                    CNIC *
                   </label>
                   <input
                     type="text"
-                    id="institution"
-                    name="institution"
-                    value={formData.institution}
+                    id="cnic"
+                    name="cnic"
+                    value={formData.cnic}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter your school/college name"
+                    placeholder="xxxxx-xxxxxxx-x"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Institution *
+                </label>
+                <input
+                  type="text"
+                  id="institution"
+                  name="institution"
+                  value={formData.institution}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your school/college name"
                   />
                 </div>
               </div>

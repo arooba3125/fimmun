@@ -8,6 +8,8 @@ interface TicketData {
   serial_number: string;
   registration_type: string;
   committee: string | null;
+  committees: string[];
+  cnic: string | null;
   event: string;
   date: string;
   location: string;
@@ -170,11 +172,27 @@ export default function Ticket() {
                   <p className="text-2xl font-bold text-gray-900">{ticket.registration_type.toUpperCase()}</p>
                 </div>
 
-                {/* Committee */}
+                {/* Committees */}
                 <div>
-                  <p className="text-xl font-semibold text-gray-700 mb-1">Committee:</p>
-                  <p className="text-2xl font-bold text-gray-900">{ticket.committee || 'Not Assigned'}</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-1">Committee{ticket.committees?.length > 1 ? 's' : ''}:</p>
+                  {ticket.committees && ticket.committees.length > 0 ? (
+                    <div className="space-y-1">
+                      {ticket.committees.map((committee, index) => (
+                        <p key={index} className="text-xl font-bold text-gray-900">{committee}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-900">Not Assigned</p>
+                  )}
                 </div>
+
+                {/* CNIC */}
+                {ticket.cnic && (
+                  <div>
+                    <p className="text-xl font-semibold text-gray-700 mb-1">CNIC:</p>
+                    <p className="text-2xl font-bold text-gray-900 font-mono">{ticket.cnic}</p>
+                  </div>
+                )}
 
                 {/* Event */}
                 <div>

@@ -56,6 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const head_delegate_name = Array.isArray(fields.head_delegate_name) ? fields.head_delegate_name[0] : fields.head_delegate_name;
     const head_delegate_email = Array.isArray(fields.head_delegate_email) ? fields.head_delegate_email[0] : fields.head_delegate_email;
     const head_delegate_whatsapp = Array.isArray(fields.head_delegate_whatsapp) ? fields.head_delegate_whatsapp[0] : fields.head_delegate_whatsapp;
+    const head_delegate_cnic = Array.isArray(fields.head_delegate_cnic) ? fields.head_delegate_cnic[0] : fields.head_delegate_cnic;
     const head_delegate_institution = Array.isArray(fields.head_delegate_institution) ? fields.head_delegate_institution[0] : fields.head_delegate_institution;
     const head_delegate_experience = Array.isArray(fields.head_delegate_experience) ? fields.head_delegate_experience[0] : fields.head_delegate_experience;
     const referral_source_id = Array.isArray(fields.referral_source_id) ? fields.referral_source_id[0] : fields.referral_source_id;
@@ -93,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Validation
     if (!delegation_name || !head_delegate_committee || !head_delegate_name || 
-        !head_delegate_email || !head_delegate_whatsapp || !head_delegate_institution || !referral_source_id) {
+        !head_delegate_email || !head_delegate_whatsapp || !head_delegate_cnic || !head_delegate_institution || !referral_source_id) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
@@ -149,6 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         head_delegate_name,
         head_delegate_email,
         head_delegate_whatsapp,
+        cnic: head_delegate_cnic,
         head_delegate_institution,
         head_delegate_experience: head_delegate_experience || null,
         payment_proof_url,

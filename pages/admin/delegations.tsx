@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 interface Delegation {
   id: string;
@@ -11,6 +12,7 @@ interface Delegation {
   head_delegate_name: string;
   head_delegate_email: string;
   head_delegate_whatsapp: string;
+  cnic: string | null;
   head_delegate_institution: string;
   head_delegate_experience: string | null;
   payment_proof_url: string | null;
@@ -143,6 +145,37 @@ export default function AdminDelegations() {
     }
   };
 
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = filteredDelegations.map((delegation) => ({
+      'Delegation Serial': delegation.delegation_serial,
+      'Delegation Name': delegation.delegation_name,
+      'Head Delegate Name': delegation.head_delegate_name,
+      'Head Delegate Email': delegation.head_delegate_email,
+      'Head Delegate WhatsApp': delegation.head_delegate_whatsapp,
+      'Head Delegate CNIC': delegation.cnic || 'N/A',
+      'Institution': delegation.head_delegate_institution,
+      'Committee Preferences': delegation.committee_preferences.join(', '),
+      'Head Delegate Experience': delegation.head_delegate_experience || 'N/A',
+      'Status': delegation.status.toUpperCase(),
+      'Registered Date': new Date(delegation.created_at).toLocaleDateString(),
+      'Updated Date': new Date(delegation.updated_at).toLocaleDateString(),
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Delegations');
+    
+    // Generate filename with current date
+    const filename = `delegations_${filter}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    // Download file
+    XLSX.writeFile(workbook, filename);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -184,9 +217,20 @@ export default function AdminDelegations() {
 
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Manage Delegations</h1>
-            <p className="mt-2 text-gray-600">Review and manage delegation registrations</p>
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Manage Delegations</h1>
+              <p className="mt-2 text-gray-600">Review and manage delegation registrations</p>
+            </div>
+            <button
+              onClick={exportToExcel}
+              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download Excel
+            </button>
           </div>
 
           {/* Filter Tabs */}
@@ -238,6 +282,7 @@ export default function AdminDelegations() {
                         <div className="mt-2 text-sm text-gray-600">
                           <p>Head Delegate Email: {delegation.head_delegate_email}</p>
                           <p>Head Delegate WhatsApp: {delegation.head_delegate_whatsapp}</p>
+                          {delegation.cnic && <p>Head Delegate CNIC: {delegation.cnic}</p>}
                           <p>Institution: {delegation.head_delegate_institution}</p>
                           <p>Committee Preferences: {delegation.committee_preferences.join(', ')}</p>
                           <p>Registered: {new Date(delegation.created_at).toLocaleDateString()}</p>

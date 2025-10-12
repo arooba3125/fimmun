@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
     const email = Array.isArray(fields.email) ? fields.email[0] : fields.email;
     const whatsapp = Array.isArray(fields.whatsapp) ? fields.whatsapp[0] : fields.whatsapp;
+    const cnic = Array.isArray(fields.cnic) ? fields.cnic[0] : fields.cnic;
     const institution = Array.isArray(fields.institution) ? fields.institution[0] : fields.institution;
     const mun_experience = Array.isArray(fields.mun_experience) ? fields.mun_experience[0] : fields.mun_experience;
     const committee_preference = Array.isArray(fields.committee_preference) ? fields.committee_preference[0] : fields.committee_preference;
@@ -71,12 +72,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validation
-    if (!delegation_serial || !name || !email || !whatsapp || !institution || !committee_preference || !referral_source_id) {
+    if (!delegation_serial || !name || !email || !whatsapp || !cnic || !institution || !committee_preference || !referral_source_id) {
       console.error('Validation failed:', {
         delegation_serial: !!delegation_serial,
         name: !!name,
         email: !!email,
         whatsapp: !!whatsapp,
+        cnic: !!cnic,
         institution: !!institution,
         committee_preference: !!committee_preference,
         referral_source_id: !!referral_source_id
@@ -255,6 +257,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       name,
       email,
       whatsapp,
+      cnic,
       institution,
       mun_experience: mun_experience || '',
       payment_proof_url,

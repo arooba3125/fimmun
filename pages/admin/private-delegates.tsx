@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 interface PrivateDelegate {
   id: string;
   name: string;
   email: string;
   whatsapp: string;
+  cnic: string | null;
   institution: string;
   mun_experience: string | null;
   committee_preferences: string[];
@@ -97,6 +99,37 @@ export default function AdminPrivateDelegates() {
     filter === 'all' || delegate.status === filter
   );
 
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = filteredDelegates.map((delegate) => ({
+      'Serial Number': delegate.serial_number || 'N/A',
+      'Name': delegate.name,
+      'Email': delegate.email,
+      'WhatsApp': delegate.whatsapp,
+      'CNIC': delegate.cnic || 'N/A',
+      'Institution': delegate.institution,
+      'MUN Experience': delegate.mun_experience || 'N/A',
+      'Committee Preferences': delegate.committee_preferences.join(', ') || 'N/A',
+      'Status': delegate.status.toUpperCase(),
+      'Verification Code': delegate.verification_code,
+      'Registered Date': new Date(delegate.created_at).toLocaleDateString(),
+      'Updated Date': new Date(delegate.updated_at).toLocaleDateString(),
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Private Delegates');
+    
+    // Generate filename with current date
+    const filename = `private_delegates_${filter}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    // Download file
+    XLSX.writeFile(workbook, filename);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
@@ -147,6 +180,15 @@ export default function AdminPrivateDelegates() {
                 >
                   Refresh
                 </button>
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download Excel
+                </button>
               </div>
             </div>
           </div>
@@ -191,6 +233,9 @@ export default function AdminPrivateDelegates() {
                             <div>
                               <p className="text-sm text-gray-600"><strong>Email:</strong> {delegate.email}</p>
                               <p className="text-sm text-gray-600"><strong>WhatsApp:</strong> {delegate.whatsapp}</p>
+                              {delegate.cnic && (
+                                <p className="text-sm text-gray-600"><strong>CNIC:</strong> {delegate.cnic}</p>
+                              )}
                               <p className="text-sm text-gray-600"><strong>Institution:</strong> {delegate.institution}</p>
                             </div>
                             <div>
