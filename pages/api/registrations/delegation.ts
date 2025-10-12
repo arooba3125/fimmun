@@ -177,7 +177,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const verificationCode = generateVerificationCode();
 
     // Create head delegate as a delegation member
-    const { data: headDelegateMember, error: memberError } = await supabaseAdmin
+    const { error: memberError } = await supabaseAdmin
       .from('delegation_members')
       .insert({
         delegation_id: newDelegation.id,

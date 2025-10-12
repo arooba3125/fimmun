@@ -13,15 +13,7 @@ interface FormData {
   payment_proof: File | null;
 }
 
-const COMMITTEES = [
-  'Pakistan National Assembly',
-  'Special Crisis Committee',
-  'United Nations Security Council',
-  'United Nations Human Rights Council',
-  'Disarmament and International Security Committee',
-  'Commission on the Status of Women',
-  'Organization of Islamic Cooperation'
-];
+// Removed unused COMMITTEES constant
 
 export default function DelegationMemberRegistration() {
   const [formData, setFormData] = useState<FormData>({
@@ -40,7 +32,11 @@ export default function DelegationMemberRegistration() {
   const [verificationCode, setVerificationCode] = useState('');
   const [availableCommittees, setAvailableCommittees] = useState<string[]>([]);
   const [checkingCommittees, setCheckingCommittees] = useState(false);
-  const [delegationInfo, setDelegationInfo] = useState<any>(null);
+  const [delegationInfo, setDelegationInfo] = useState<{
+    delegation_name: string;
+    head_delegate_committee: string;
+    committee_preferences: string[];
+  } | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -84,6 +80,14 @@ export default function DelegationMemberRegistration() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
+    
+    // Check file size (max 2MB)
+    if (file && file.size > 2 * 1024 * 1024) {
+      setError('File size must be less than 2MB');
+      e.target.value = ''; // Clear the input
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, payment_proof: file }));
   };
 
@@ -354,7 +358,7 @@ export default function DelegationMemberRegistration() {
                       </svg>
                       <div>
                         <p className="text-sm text-blue-800">
-                          <strong>Head Delegate Committee:</strong> The head delegate is assigned to <strong>"{delegationInfo.head_delegate_committee}"</strong> committee.
+                          <strong>Head Delegate Committee:</strong> The head delegate is assigned to <strong>&quot;{delegationInfo.head_delegate_committee}&quot;</strong> committee.
                         </p>
                         <p className="text-xs text-blue-600 mt-1">
                           You can select from the remaining committees. Each committee can only be assigned to one member.
@@ -420,6 +424,30 @@ export default function DelegationMemberRegistration() {
                 </div>
               </div>
 
+              {/* Bank Details */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Bank Details for Payment</h3>
+                <div className="bg-gray-800 rounded-lg p-4 text-white">
+                  <div className="mb-2">
+                    <p className="text-lg font-bold">FARZANA PERVEEN</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-sm text-gray-300">01201003345332</p>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText('01201003345332')}
+                        className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded transition-colors"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">Bank Alfalah</p>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  Please make the payment to the above account and upload proof of payment.
+                </p>
+              </div>
+
               {/* Payment Proof */}
               <div>
                 <label htmlFor="payment_proof" className="block text-sm font-medium text-gray-700 mb-2">
@@ -435,7 +463,7 @@ export default function DelegationMemberRegistration() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  Upload a screenshot or image of your payment proof (JPG, PNG, or PDF)
+                  Upload a screenshot or image of your payment proof (JPG, PNG, or PDF). Maximum file size: 2MB
                 </p>
               </div>
 

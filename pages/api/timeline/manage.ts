@@ -14,7 +14,7 @@ function verifyAdminToken(req: NextApiRequest): { isValid: boolean; adminId?: st
   try {
     const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET || 'fallback-secret') as JwtPayload;
     return { isValid: true, adminId: decoded.id };
-  } catch (error) {
+  } catch {
     return { isValid: false, error: 'Invalid or expired token' };
   }
 }

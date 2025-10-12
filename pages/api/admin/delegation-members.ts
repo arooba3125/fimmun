@@ -1,25 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
-import { handleDelegationMemberCommitteeCount } from '../../../lib/committeeUtils';
-
-// Generate serial number for delegation members (same as private delegates)
-async function generateSerialNumber(supabase: ReturnType<typeof createAdminClient>, prefix: string): Promise<string> {
-  const { data } = await supabase
-    .from('delegation_members')
-    .select('serial_number')
-    .like('serial_number', `${prefix}-%`)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  let nextNumber = 1;
-  if (data && data.length > 0) {
-    const lastSerial = data[0].serial_number;
-    const lastNumber = parseInt(lastSerial.split('-')[1]);
-    nextNumber = lastNumber + 1;
-  }
-
-  return `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
-}
+import { incrementCommitteeRegistrationCount, decrementCommitteeRegistrationCount } from '../../../lib/committeeRegistrationCaps';
+import { generateUniqueSerialNumber, SERIAL_NUMBER_CATEGORIES } from '../../../lib/serialNumberUtils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
@@ -74,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // First, get the current member data to check committee preference and previous status
       const { data: currentMember, error: fetchError } = await supabaseAdmin
         .from('delegation_members')
-        .select('committee_preference, status')
+        .select('committee_preference, status, delegation_id, email')
         .eq('id', id)
         .single();
 
@@ -92,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (status === 'verified') {
         // Generate serial number when verifying
-        const serialNumber = await generateSerialNumber(supabaseAdmin, 'OD');
+        const serialNumber = await generateUniqueSerialNumber(SERIAL_NUMBER_CATEGORIES.DELEGATES);
         updateData.serial_number = serialNumber;
       }
 
@@ -119,17 +101,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      // Handle committee count updates
+      // Handle committee count and registration caps updates
       if (currentMember?.committee_preference) {
         const wasVerified = currentMember.status === 'verified';
         const isNowVerified = status === 'verified';
         
-        // Only update committee count if status actually changed
+        // Only update counts if status actually changed
         if (wasVerified !== isNowVerified) {
-          await handleDelegationMemberCommitteeCount(
-            currentMember.committee_preference,
-            isNowVerified
-          );
+          // Update committee registration count
+          if (currentMember.committee_preference) {
+            if (isNowVerified) {
+              // Increment committee count when verifying
+              await incrementCommitteeRegistrationCount(currentMember.committee_preference);
+            } else if (wasVerified && !isNowVerified) {
+              // Decrement committee count when unverifying
+              await decrementCommitteeRegistrationCount(currentMember.committee_preference);
+            }
+          }
+        }
+      }
+
+      // Auto-approve delegation when head delegate is approved
+      if (status === 'verified' && updatedMember) {
+        try {
+          // Check if this member is the head delegate
+          const { data: delegationInfo } = await supabaseAdmin
+            .from('delegations')
+            .select('id, head_delegate_email, status')
+            .eq('id', updatedMember.delegation_id)
+            .single();
+
+          if (delegationInfo && 
+              delegationInfo.head_delegate_email === updatedMember.email && 
+              delegationInfo.status === 'pending') {
+            // Auto-approve the delegation
+            await supabaseAdmin
+              .from('delegations')
+              .update({
+                status: 'verified',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', updatedMember.delegation_id);
+          }
+        } catch (error) {
+          console.warn('Failed to auto-approve delegation:', error);
+          // Don't fail the main operation if delegation approval fails
         }
       }
 
@@ -157,6 +173,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      // Get member info before deletion to check if we need to update counts
+      const { data: member } = await supabaseAdmin
+        .from('delegation_members')
+        .select('status, committee_preference')
+        .eq('id', id)
+        .single();
+
       // Delete the delegation member
       const { error: deleteError } = await supabaseAdmin
         .from('delegation_members')
@@ -169,6 +192,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           error: 'Failed to delete delegation member',
           details: deleteError.message
         });
+      }
+
+      // Update committee registration cap if member was verified
+      if (member && member.status === 'verified' && member.committee_preference) {
+        await decrementCommitteeRegistrationCount(member.committee_preference);
       }
 
       return res.status(200).json({

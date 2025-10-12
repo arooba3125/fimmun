@@ -1,25 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
-import { handlePrivateDelegateCommitteeCount } from '../../../lib/committeeUtils';
-
-// Generate serial number
-async function generateSerialNumber(supabase: ReturnType<typeof createAdminClient>, prefix: string): Promise<string> {
-  const { data } = await supabase
-    .from('private_delegates')
-    .select('serial_number')
-    .like('serial_number', `${prefix}-%`)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  let nextNumber = 1;
-  if (data && data.length > 0) {
-    const lastSerial = data[0].serial_number;
-    const lastNumber = parseInt(lastSerial.split('-')[1]);
-    nextNumber = lastNumber + 1;
-  }
-
-  return `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
-}
+import { incrementCommitteeRegistrationCount, decrementCommitteeRegistrationCount } from '../../../lib/committeeRegistrationCaps';
+import { generateUniqueSerialNumber, SERIAL_NUMBER_CATEGORIES } from '../../../lib/serialNumberUtils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
@@ -86,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (status === 'verified') {
         // Generate serial number when verifying
-        const serialNumber = await generateSerialNumber(supabaseAdmin, 'OD');
+        const serialNumber = await generateUniqueSerialNumber(SERIAL_NUMBER_CATEGORIES.DELEGATES);
         updateData.serial_number = serialNumber;
       }
 
@@ -107,17 +89,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      // Handle committee count updates
+      // Handle committee registration caps updates
       if (currentDelegate?.committee_preferences && currentDelegate.committee_preferences.length > 0) {
         const wasVerified = currentDelegate.status === 'verified';
         const isNowVerified = status === 'verified';
         
-        // Only update committee count if status actually changed
+        // Only update counts if status actually changed
         if (wasVerified !== isNowVerified) {
-          await handlePrivateDelegateCommitteeCount(
-            currentDelegate.committee_preferences,
-            isNowVerified
-          );
+          const primaryCommittee = currentDelegate.committee_preferences[0]; // Use first preference
+          
+          if (isNowVerified) {
+            // Increment committee count when verifying
+            await incrementCommitteeRegistrationCount(primaryCommittee);
+          } else if (wasVerified && !isNowVerified) {
+            // Decrement committee count when unverifying
+            await decrementCommitteeRegistrationCount(primaryCommittee);
+          }
         }
       }
 
@@ -148,7 +135,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Get delegate info before deletion
       const { data: delegate } = await supabaseAdmin
         .from('private_delegates')
-        .select('status')
+        .select('status, committee_preferences')
         .eq('id', id)
         .single();
 
@@ -166,23 +153,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      // Update registration cap if delegate was verified
-      if (delegate && delegate.status === 'verified') {
-        const { data: capData } = await supabaseAdmin
-          .from('registration_caps')
-          .select('current_count')
-          .eq('category', 'delegates')
-          .single();
-
-        if (capData) {
-          await supabaseAdmin
-            .from('registration_caps')
-            .update({ 
-              current_count: Math.max(0, capData.current_count - 1),
-              updated_at: new Date().toISOString()
-            })
-            .eq('category', 'delegates');
-        }
+      // Update committee registration cap if delegate was verified
+      if (delegate && delegate.status === 'verified' && delegate.committee_preferences && delegate.committee_preferences.length > 0) {
+        await decrementCommitteeRegistrationCount(delegate.committee_preferences[0]);
       }
 
       return res.status(200).json({

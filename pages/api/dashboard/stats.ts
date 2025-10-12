@@ -83,13 +83,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .eq('status', 'pending')
     ]);
 
-    // Calculate totals
-    const totalVerifiedDelegates = (privateDelegatesResult.data?.length || 0) + (delegationMembersResult.data?.length || 0);
+    // Calculate totals - separate private delegates from delegation members
+    const totalVerifiedPrivateDelegates = privateDelegatesResult.data?.length || 0;
+    const totalVerifiedDelegationMembers = delegationMembersResult.data?.length || 0;
+    const totalVerifiedDelegates = totalVerifiedPrivateDelegates + totalVerifiedDelegationMembers; // Combined for registration caps
     const totalVerifiedObservers = observersResult.data?.length || 0;
     const totalVerifiedAlumni = alumniResult.data?.length || 0;
     const totalVerifiedDelegations = delegationsResult.data?.length || 0;
 
-    const totalPendingDelegates = (pendingPrivateDelegatesResult.data?.length || 0) + (pendingDelegationMembersResult.data?.length || 0);
+    const totalPendingPrivateDelegates = pendingPrivateDelegatesResult.data?.length || 0;
+    const totalPendingDelegationMembers = pendingDelegationMembersResult.data?.length || 0;
+    const totalPendingDelegates = totalPendingPrivateDelegates + totalPendingDelegationMembers; // Combined for total pending
     const totalPendingObservers = pendingObserversResult.data?.length || 0;
     const totalPendingAlumni = pendingAlumniResult.data?.length || 0;
     const totalPendingDelegations = pendingDelegationsResult.data?.length || 0;
@@ -160,19 +164,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const stats = {
       verified: {
-        delegates: totalVerifiedDelegates,
+        private_delegates: totalVerifiedPrivateDelegates,
+        delegates: totalVerifiedDelegates, // Combined count for registration caps
         observers: totalVerifiedObservers,
         alumni: totalVerifiedAlumni,
         delegations: totalVerifiedDelegations,
-        delegation_members: delegationMembersResult.data?.length || 0,
+        delegation_members: totalVerifiedDelegationMembers,
         total: totalVerifiedDelegates + totalVerifiedObservers + totalVerifiedAlumni
       },
       pending: {
-        delegates: totalPendingDelegates,
+        private_delegates: totalPendingPrivateDelegates,
+        delegates: totalPendingDelegates, // Combined count for total pending
         observers: totalPendingObservers,
         alumni: totalPendingAlumni,
         delegations: totalPendingDelegations,
-        delegation_members: pendingDelegationMembersResult.data?.length || 0,
+        delegation_members: totalPendingDelegationMembers,
         total: totalPendingDelegates + totalPendingObservers + totalPendingAlumni
       },
       caps: {

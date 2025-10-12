@@ -151,3 +151,133 @@ export async function handlePrivateDelegateCommitteeCount(
     return await decrementCommitteeCount(primaryPreference);
   }
 }
+
+/**
+ * Update registration caps count for a specific category
+ * @param category - The category to update ('delegates', 'observers', 'alumni')
+ * @param isVerification - true if verifying (increment), false if unverifying (decrement)
+ * @returns Promise<boolean> - true if successful, false otherwise
+ */
+export async function updateRegistrationCapsCount(category: string, isVerification: boolean): Promise<boolean> {
+  try {
+    const supabaseAdmin = createAdminClient();
+    
+    // Get current count for the specific category
+    const { data: capData, error: fetchError } = await supabaseAdmin
+      .from('registration_caps')
+      .select('current_count, max_count')
+      .eq('category', category)
+      .single();
+
+    if (fetchError) {
+      console.error(`Error fetching registration caps for ${category}:`, fetchError);
+      return false;
+    }
+
+    if (!capData) {
+      console.error(`No registration caps found for ${category}`);
+      return false;
+    }
+
+    let newCount;
+    if (isVerification) {
+      // Check if at capacity
+      if (capData.current_count >= capData.max_count) {
+        console.warn(`${category} registration is at capacity (${capData.max_count})`);
+        return false;
+      }
+      newCount = capData.current_count + 1;
+    } else {
+      // Don't go below 0
+      newCount = Math.max(0, capData.current_count - 1);
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from('registration_caps')
+      .update({ 
+        current_count: newCount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('category', category);
+
+    if (updateError) {
+      console.error(`Error updating registration caps for ${category}:`, updateError);
+      return false;
+    }
+
+    console.log(`Successfully ${isVerification ? 'incremented' : 'decremented'} ${category} registration count to ${newCount}`);
+    return true;
+  } catch (error) {
+    console.error(`Error in updateRegistrationCapsCount for ${category}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Handle combined updates for private delegate verification/rejection
+ * @param committeePreferences - Array of committee preferences
+ * @param isVerification - true if verifying, false if unverifying
+ * @returns Promise<boolean> - true if successful, false otherwise
+ */
+export async function handlePrivateDelegateUpdates(
+  committeePreferences: string[], 
+  isVerification: boolean
+): Promise<boolean> {
+  // Update committee count
+  const committeeUpdateSuccess = await handlePrivateDelegateCommitteeCount(
+    committeePreferences, 
+    isVerification
+  );
+  
+  // Update registration caps for delegates category
+  const capsUpdateSuccess = await updateRegistrationCapsCount('delegates', isVerification);
+  
+  // Log results
+  if (!committeeUpdateSuccess) {
+    console.warn('Failed to update committee count for private delegate');
+  }
+  if (!capsUpdateSuccess) {
+    console.warn('Failed to update delegates registration caps for private delegate');
+  }
+  
+  // Return true if at least one update succeeded
+  return committeeUpdateSuccess || capsUpdateSuccess;
+}
+
+/**
+ * Handle combined updates for delegation member verification/rejection
+ * @param committeePreference - The committee preference of the delegation member
+ * @param isVerification - true if verifying, false if unverifying
+ * @param isHeadDelegate - true if this is a head delegate, false otherwise
+ * @returns Promise<boolean> - true if successful, false otherwise
+ */
+export async function handleDelegationMemberUpdates(
+  committeePreference: string, 
+  isVerification: boolean,
+  isHeadDelegate: boolean = false
+): Promise<boolean> {
+  // Update committee count
+  const committeeUpdateSuccess = await handleDelegationMemberCommitteeCount(
+    committeePreference, 
+    isVerification
+  );
+  
+  // Update registration caps for delegates category
+  const capsUpdateSuccess = await updateRegistrationCapsCount('delegates', isVerification);
+  
+  // Log results
+  if (!committeeUpdateSuccess) {
+    console.warn('Failed to update committee count for delegation member');
+  }
+  if (!capsUpdateSuccess) {
+    console.warn('Failed to update delegates registration caps for delegation member');
+  }
+  
+  // Log head delegate verification
+  if (isHeadDelegate && isVerification) {
+    console.log('Head delegate verified - committee and delegates registration caps updated');
+  }
+  
+  // Return true if at least one update succeeded
+  return committeeUpdateSuccess || capsUpdateSuccess;
+}

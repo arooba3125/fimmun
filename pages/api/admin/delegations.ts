@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import { incrementCommitteeRegistrationCount, decrementCommitteeRegistrationCount } from '../../../lib/committeeRegistrationCaps';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
@@ -67,6 +68,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      // First, get the current delegation data to check committee preferences and previous status
+      const { data: currentDelegation, error: fetchError } = await supabaseAdmin
+        .from('delegations')
+        .select('status, committee_preferences')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to fetch delegation data',
+          details: fetchError.message
+        });
+      }
+
       const updateData: Record<string, unknown> = {
         status,
         updated_at: new Date().toISOString()
@@ -85,6 +101,52 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           error: 'Failed to update delegation',
           details: updateError.message
         });
+      }
+
+      // Handle committee registration caps updates for head delegate
+      if (currentDelegation?.committee_preferences && currentDelegation.committee_preferences.length > 0) {
+        const wasVerified = currentDelegation.status === 'verified';
+        const isNowVerified = status === 'verified';
+        
+        // Only update counts if status actually changed
+        if (wasVerified !== isNowVerified) {
+          const headDelegateCommittee = currentDelegation.committee_preferences[0]; // Head delegate committee
+          
+          if (isNowVerified) {
+            // Increment committee count when verifying
+            await incrementCommitteeRegistrationCount(headDelegateCommittee);
+          } else if (wasVerified && !isNowVerified) {
+            // Decrement committee count when unverifying
+            await decrementCommitteeRegistrationCount(headDelegateCommittee);
+          }
+        }
+      }
+
+      // Auto-approve delegation head when delegation is approved
+      if (status === 'verified') {
+        try {
+          // Get delegation info to find head delegate
+          const { data: delegationInfo } = await supabaseAdmin
+            .from('delegations')
+            .select('head_delegate_email')
+            .eq('id', id)
+            .single();
+
+          if (delegationInfo?.head_delegate_email) {
+            // Update head delegate status to verified
+            await supabaseAdmin
+              .from('delegation_members')
+              .update({
+                status: 'verified',
+                updated_at: new Date().toISOString()
+              })
+              .eq('delegation_id', id)
+              .eq('email', delegationInfo.head_delegate_email);
+          }
+        } catch (error) {
+          console.warn('Failed to auto-approve delegation head:', error);
+          // Don't fail the main operation if head approval fails
+        }
       }
 
       return res.status(200).json({

@@ -52,10 +52,21 @@ interface AdminUser {
   role: string;
 }
 
+interface CommitteeCap {
+  id: string;
+  committee_name: string;
+  max_capacity: number;
+  current_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function AdminDashboard() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
+  const [committeeCaps, setCommitteeCaps] = useState<CommitteeCap[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const router = useRouter();
@@ -77,6 +88,7 @@ export default function AdminDashboard() {
 
     setUser(JSON.parse(userData));
     fetchStats();
+    fetchCommitteeCaps();
     setLoading(false);
 
     return () => clearInterval(timer);
@@ -100,6 +112,47 @@ export default function AdminDashboard() {
       if (isRefresh) {
         setRefreshing(false);
       }
+    }
+  };
+
+  const fetchCommitteeCaps = async () => {
+    try {
+      const response = await fetch('/api/admin/committee-registration-caps');
+      const data = await response.json();
+      
+      if (data.success) {
+        setCommitteeCaps(data.caps);
+      }
+    } catch (error) {
+      console.error('Error fetching committee caps:', error);
+    }
+  };
+
+  const recalculateRegistrationCaps = async () => {
+    setRecalculating(true);
+    
+    try {
+      const response = await fetch('/api/admin/recalculate-registration-caps', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh stats to show updated counts
+        await fetchStats();
+        alert('Registration caps recalculated successfully!');
+      } else {
+        alert('Failed to recalculate registration caps: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error recalculating registration caps:', error);
+      alert('Failed to recalculate registration caps');
+    } finally {
+      setRecalculating(false);
     }
   };
 
@@ -182,28 +235,55 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <button
-                    onClick={() => fetchStats(true)}
-                    disabled={refreshing}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {refreshing ? (
-                      <>
-                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Refreshing...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Refresh Data
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={recalculateRegistrationCaps}
+                      disabled={recalculating}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {recalculating ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Recalculating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          Recalc Caps
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        fetchStats(true);
+                        fetchCommitteeCaps();
+                      }}
+                      disabled={refreshing}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {refreshing ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Refreshing...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Refresh Data
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -243,7 +323,7 @@ export default function AdminDashboard() {
               <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Delegates</p>
+                    <p className="text-sm font-medium text-gray-600">Private Delegates</p>
                     <p className="text-3xl font-bold text-blue-600">{stats.verified.delegates}</p>
                     <p className="text-xs text-gray-500">{stats.caps.delegates.current}/{stats.caps.delegates.max}</p>
                   </div>
@@ -269,6 +349,62 @@ export default function AdminDashboard() {
                     </svg>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Committee Registration Caps */}
+          {committeeCaps.length > 0 && (
+            <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Committee Registration Status</h2>
+                <Link 
+                  href="/admin/committee-caps"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                >
+                  Manage Caps
+                </Link>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {committeeCaps.map((cap) => (
+                  <div key={cap.id} className="bg-white/40 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                    <h3 className="font-semibold text-gray-900 text-sm mb-2 truncate" title={cap.committee_name}>
+                      {cap.committee_name}
+                    </h3>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-600">
+                        {cap.current_count} / {cap.max_capacity}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        cap.current_count >= cap.max_capacity 
+                          ? 'bg-red-100 text-red-800' 
+                          : cap.current_count >= cap.max_capacity * 0.8 
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                      }`}>
+                        {cap.current_count >= cap.max_capacity 
+                          ? 'Full' 
+                          : cap.current_count >= cap.max_capacity * 0.8 
+                            ? 'Almost Full'
+                            : 'Available'
+                        }
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          cap.current_count >= cap.max_capacity 
+                            ? 'bg-red-500' 
+                            : cap.current_count >= cap.max_capacity * 0.8 
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
+                        }`}
+                        style={{ width: `${Math.min((cap.current_count / cap.max_capacity) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -339,6 +475,27 @@ export default function AdminDashboard() {
               </div>
             </Link>
 
+            <Link href="/admin/delegation-members" className="group">
+              <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Delegation Members</h3>
+                    <p className="text-sm text-gray-600">Manage delegation members</p>
+                    {stats && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {stats.verified.delegation_members} verified • {stats.pending.delegation_members} pending
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                    <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
             <Link href="/admin/delegations" className="group">
               <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 <div className="flex items-center justify-between">
@@ -360,45 +517,6 @@ export default function AdminDashboard() {
               </div>
             </Link>
 
-            <Link href="/admin/delegation-members" className="group">
-              <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Delegation Members</h3>
-                    <p className="text-sm text-gray-600">Manage individual delegation members</p>
-                    {stats && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {stats.verified.delegation_members} verified • {stats.pending.delegation_members} pending
-                      </p>
-                    )}
-                  </div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                    <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/admin/committees" className="group">
-              <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Committees</h3>
-                    <p className="text-sm text-gray-600">View committees and delegate counts</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Track verified delegates per committee
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-teal-200 transition-colors">
-                    <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </Link>
 
             <Link href="/admin/timeline" className="group">
               <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">

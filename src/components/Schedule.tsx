@@ -39,7 +39,7 @@ export default function Schedule() {
       } else {
         setError(data.error || 'Failed to fetch timeline');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch timeline');
     } finally {
       setLoading(false);

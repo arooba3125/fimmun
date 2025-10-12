@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase, Committee } from '../../lib/supabaseClient';
+import { Committee } from '../../lib/supabaseClient';
 import { MUN_CONSTANTS } from '../lib/constants';
 
 interface CommitteeModalProps {
@@ -114,7 +114,7 @@ function CommitteeModal({ committee, isOpen, onClose }: CommitteeModalProps) {
 
             {/* Skills Developed */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Skills You'll Develop</h4>
+              <h4 className="font-semibold text-gray-900 mb-3">Skills You&apos;ll Develop</h4>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -230,13 +230,32 @@ export default function Committees() {
 
   const fetchCommittees = async () => {
     try {
-      const { data, error } = await supabase
-        .from('committees')
-        .select('*')
-        .order('created_at');
+      // Fetch from committee registration caps API
+      const response = await fetch('/api/admin/committee-registration-caps');
+      const data = await response.json();
       
-      if (error) throw error;
-      setCommittees(data || []);
+      if (data.success && data.caps) {
+        // Transform the caps data to match Committee interface
+        const committeesData = data.caps.map((cap: {
+          id: string;
+          committee_name: string;
+          max_capacity: number;
+          current_count: number;
+          created_at: string;
+          updated_at: string;
+        }) => ({
+          id: cap.id,
+          name: cap.committee_name,
+          description: getCommitteeDescription(cap.committee_name),
+          capacity: cap.max_capacity,
+          current_count: cap.current_count,
+          created_at: cap.created_at,
+          updated_at: cap.updated_at,
+        }));
+        setCommittees(committeesData);
+      } else {
+        throw new Error('Failed to fetch committee data');
+      }
     } catch (error) {
       console.error('Error fetching committees:', error);
       // Fallback to constants if database fails

@@ -92,11 +92,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check registration cap
     const { data: capData } = await supabaseAdmin
       .from('registration_caps')
-      .select('current_count, max_capacity')
+      .select('current_count, max_count')
       .eq('category', 'observers')
       .single();
 
-    if (capData && capData.current_count >= capData.max_capacity) {
+    if (capData && capData.current_count >= capData.max_count) {
       return res.status(400).json({
         success: false,
         message: 'Registration cap reached for observers'

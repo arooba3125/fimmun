@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createAdminClient } from '../../lib/supabaseClient';
+import { createAdminClient } from '../../../lib/supabaseClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -62,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Test 3: Check bucket configuration
-    const { data: buckets, error: bucketsError } = await supabaseAdmin.storage.listBuckets();
+    const { data: buckets } = await supabaseAdmin.storage.listBuckets();
     const paymentProofsBucket = buckets?.find(bucket => bucket.id === 'payment-proofs');
 
     return res.status(200).json({

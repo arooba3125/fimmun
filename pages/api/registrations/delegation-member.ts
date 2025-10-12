@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const committee_preference = Array.isArray(fields.committee_preference) ? fields.committee_preference[0] : fields.committee_preference;
 
     // Handle file upload
-    let payment_proof_url = null;
+    let payment_proof_url = '';
     const paymentProofFile = files.payment_proof?.[0];
     
     if (paymentProofFile) {
@@ -247,14 +247,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Create delegation member
     // Check if committee_preference column exists before including it in insert
-    const insertData: any = {
+    const insertData: Record<string, string | string[]> = {
       delegation_id: delegation.id,
       delegation_serial: delegation_serial,
       name,
       email,
       whatsapp,
       institution,
-      mun_experience: mun_experience || null,
+      mun_experience: mun_experience || '',
       payment_proof_url,
       verification_code: verificationCode,
       status: 'pending',
@@ -303,6 +303,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // If error is related to committee_preference column, try without it
       if (error.message && error.message.includes('committee_preference')) {
         console.log('Retrying without committee_preference column...');
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { committee_preference, ...insertDataWithoutCommittee } = insertData;
         
         const { data: retryMember, error: retryError } = await supabaseAdmin

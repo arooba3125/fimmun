@@ -1,24 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
-
-// Generate serial number
-async function generateSerialNumber(supabase: ReturnType<typeof createAdminClient>, prefix: string): Promise<string> {
-  const { data } = await supabase
-    .from('observers')
-    .select('serial_number')
-    .like('serial_number', `${prefix}-%`)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  let nextNumber = 1;
-  if (data && data.length > 0) {
-    const lastSerial = data[0].serial_number;
-    const lastNumber = parseInt(lastSerial.split('-')[1]);
-    nextNumber = lastNumber + 1;
-  }
-
-  return `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
-}
+import { generateUniqueSerialNumber, SERIAL_NUMBER_CATEGORIES } from '../../../lib/serialNumberUtils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
@@ -64,13 +46,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString()
       };
 
       if (status === 'verified') {
         // Generate serial number when verifying
-        const serialNumber = await generateSerialNumber(supabaseAdmin, 'OO');
+        const serialNumber = await generateUniqueSerialNumber(SERIAL_NUMBER_CATEGORIES.OBSERVERS);
         updateData.serial_number = serialNumber;
       }
 
@@ -90,6 +73,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           details: updateError.message
         });
       }
+
+      // Observers don't have committee assignments, so no committee caps to update
 
       return res.status(200).json({
         success: true,

@@ -28,7 +28,6 @@ export default function Hero() {
         {/* Logo/Badge */}
         <div className="mb-8 animate-float">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full border-2 border-white/20 mb-6 hover:bg-white/20 transition-all duration-500">
-            <span className="text-4xl font-bold text-white">UN</span>
           </div>
         </div>
         

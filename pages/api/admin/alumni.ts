@@ -1,24 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
-
-// Generate serial number
-async function generateSerialNumber(supabase: ReturnType<typeof createAdminClient>, prefix: string): Promise<string> {
-  const { data } = await supabase
-    .from('alumni')
-    .select('serial_number')
-    .like('serial_number', `${prefix}-%`)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  let nextNumber = 1;
-  if (data && data.length > 0) {
-    const lastSerial = data[0].serial_number;
-    const lastNumber = parseInt(lastSerial.split('-')[1]);
-    nextNumber = lastNumber + 1;
-  }
-
-  return `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
-}
+import { generateUniqueSerialNumber, SERIAL_NUMBER_CATEGORIES } from '../../../lib/serialNumberUtils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
@@ -64,13 +46,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString()
       };
 
       if (status === 'verified') {
         // Generate serial number when verifying
-        const serialNumber = await generateSerialNumber(supabaseAdmin, 'OA');
+        const serialNumber = await generateUniqueSerialNumber(SERIAL_NUMBER_CATEGORIES.ALUMNI);
         updateData.serial_number = serialNumber;
       }
 
@@ -90,6 +73,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           details: updateError.message
         });
       }
+
+      // Alumni registration doesn't affect committee caps
 
       return res.status(200).json({
         success: true,
@@ -115,12 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      // Get alumni info before deletion
-      const { data: alumni } = await supabaseAdmin
-        .from('alumni')
-        .select('status')
-        .eq('id', id)
-        .single();
+      // Alumni deletion doesn't affect committee caps
 
       // Delete the alumni
       const { error: deleteError } = await supabaseAdmin
@@ -134,25 +114,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           error: 'Failed to delete alumni',
           details: deleteError.message
         });
-      }
-
-      // Update registration cap if alumni was verified
-      if (alumni && alumni.status === 'verified') {
-        const { data: capData } = await supabaseAdmin
-          .from('registration_caps')
-          .select('current_count')
-          .eq('category', 'alumni')
-          .single();
-
-        if (capData) {
-          await supabaseAdmin
-            .from('registration_caps')
-            .update({ 
-              current_count: Math.max(0, capData.current_count - 1),
-              updated_at: new Date().toISOString()
-            })
-            .eq('category', 'alumni');
-        }
       }
 
       return res.status(200).json({

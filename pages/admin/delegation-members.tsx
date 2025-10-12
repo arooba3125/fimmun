@@ -12,6 +12,7 @@ interface DelegationMember {
   whatsapp: string;
   institution: string;
   mun_experience: string | null;
+  committee_preference: string;
   payment_proof_url: string | null;
   status: 'pending' | 'verified' | 'rejected';
   serial_number: string | null;
@@ -196,6 +197,9 @@ export default function AdminDelegationMembers() {
                           <h3 className="text-lg font-medium text-gray-900">{member.name}</h3>
                           <p className="text-sm text-gray-500">{member.email}</p>
                           <p className="text-sm text-gray-500">{member.institution}</p>
+                          <p className="text-sm text-blue-600 font-medium">
+                            Committee: {member.committee_preference}
+                          </p>
                           {member.delegations && (
                             <p className="text-sm text-gray-500">
                               Delegation: {member.delegations.delegation_name} ({member.delegations.delegation_serial})

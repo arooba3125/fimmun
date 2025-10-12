@@ -2,40 +2,67 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { supabase, RegistrationCap } from '../../lib/supabaseClient';
+
+interface CommitteeCap {
+  id: string;
+  committee_name: string;
+  max_capacity: number;
+  current_count: number;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function Registration() {
-  const [caps, setCaps] = useState<RegistrationCap[]>([]);
+  const [committeeCaps, setCommitteeCaps] = useState<CommitteeCap[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCaps = async () => {
+    const fetchCommitteeCaps = async () => {
       try {
-        const { data, error } = await supabase
-          .from('registration_caps')
-          .select('*')
-          .order('category');
-
-        if (error) throw error;
-        setCaps(data || []);
+        const response = await fetch('/api/admin/committee-registration-caps');
+        const data = await response.json();
+        
+        if (data.success && data.caps) {
+          setCommitteeCaps(data.caps);
+        } else {
+          throw new Error('Failed to fetch committee caps');
+        }
       } catch (error) {
-        console.error('Error fetching registration caps:', error);
+        console.error('Error fetching committee caps:', error);
         // Fallback to default caps
-        setCaps([
-          { id: '1', category: 'delegates', max_capacity: 350, current_count: 0, created_at: '', updated_at: '' },
-          { id: '2', category: 'observers', max_capacity: 150, current_count: 0, created_at: '', updated_at: '' },
-          { id: '3', category: 'alumni', max_capacity: 100, current_count: 0, created_at: '', updated_at: '' },
+        setCommitteeCaps([
+          { id: '1', committee_name: 'Pakistan National Assembly', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
+          { id: '2', committee_name: 'Special Crisis Committee', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
+          { id: '3', committee_name: 'United Nations Security Council', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
+          { id: '4', committee_name: 'United Nations Human Rights Council', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
+          { id: '5', committee_name: 'Disarmament and International Security Committee', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
+          { id: '6', committee_name: 'Commission on the Status of Women', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
+          { id: '7', committee_name: 'Organization of Islamic Cooperation', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
         ]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCaps();
+    fetchCommitteeCaps();
   }, []);
 
-  const getCapValue = (category: string) => {
-    const cap = caps.find(c => c.category === category);
+  const getTotalDelegatesCap = () => {
+    return committeeCaps.reduce((total, cap) => total + cap.max_capacity, 0);
+  };
+
+  const getTotalObserversCap = () => {
+    // Observers don't have committee assignments, so we'll use a fixed number
+    return 150;
+  };
+
+  const getTotalAlumniCap = () => {
+    // Alumni don't have committee assignments, so we'll use a fixed number
+    return 100;
+  };
+
+  const getCommitteeCap = (committeeName: string) => {
+    const cap = committeeCaps.find(c => c.committee_name === committeeName);
     return cap ? cap.max_capacity : 0;
   };
   return (
@@ -244,19 +271,19 @@ export default function Registration() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-200 mb-2">
-                {loading ? '...' : getCapValue('delegates')}
+                {loading ? '...' : getTotalDelegatesCap()}
               </div>
               <div className="text-blue-100">Total Delegates</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-200 mb-2">
-                {loading ? '...' : getCapValue('observers')}
+                {loading ? '...' : getTotalObserversCap()}
               </div>
               <div className="text-blue-100">Observers</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-200 mb-2">
-                {loading ? '...' : getCapValue('alumni')}
+                {loading ? '...' : getTotalAlumniCap()}
               </div>
               <div className="text-blue-100">Alumni</div>
             </div>
@@ -267,35 +294,35 @@ export default function Registration() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">PNA</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('pna')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Pakistan National Assembly')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">Crisis</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('crisis')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Special Crisis Committee')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">UNSC</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('unsc')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('United Nations Security Council')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">UNHRC</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('unhrc')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('United Nations Human Rights Council')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">UNDISEC</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('undisec')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Disarmament and International Security Committee')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">UNSCW</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('unscw')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Commission on the Status of Women')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">OIC</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('oic')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Organization of Islamic Cooperation')} delegates</div>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold text-white">Additional</div>
-                <div className="text-blue-200">{loading ? '...' : getCapValue('additional')} delegates</div>
+                <div className="text-blue-200">{loading ? '...' : 0} delegates</div>
               </div>
             </div>
           </div>

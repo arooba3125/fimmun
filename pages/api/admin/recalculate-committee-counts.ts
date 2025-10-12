@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Committee structure:', sampleCommittee);
 
     // Reset all committee counts to 0 - try different possible column names
-    const resetData: any = {};
+    const resetData: Record<string, number> = {};
     
     // Check if current_count exists
     if (sampleCommittee && sampleCommittee.length > 0) {
@@ -108,7 +108,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             
             // Handle specific known variations
-            const variations = {
+            const variations: Record<string, string> = {
               'disarmament and international security committee': 'united nations disarmament and international security committee (undisec)',
               'united nations human rights council': 'united nations human rights council (unhrc)',
               'united nations security council': 'united nations security council (unsc)',
@@ -164,7 +164,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             
             // Handle specific known variations
-            const variations = {
+            const variations: Record<string, string> = {
               'disarmament and international security committee': 'united nations disarmament and international security committee (undisec)',
               'united nations human rights council': 'united nations human rights council (unhrc)',
               'united nations security council': 'united nations security council (unsc)',
@@ -189,7 +189,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const totalCount = delegationCount + privateDelegateCount;
 
       // Update the committee count using the correct column
-      const updateData: any = {
+      const updateData: Record<string, number | string> = {
         [countColumn]: totalCount,
         updated_at: new Date().toISOString()
       };

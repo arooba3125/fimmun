@@ -142,7 +142,7 @@ export interface DelegationMember {
 export interface RegistrationCap {
   id: string;
   category: string;
-  max_capacity: number;
+  max_count: number;
   current_count: number;
   created_at: string;
   updated_at: string;
