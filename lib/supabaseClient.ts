@@ -3,17 +3,34 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Validate environment variables
-if (!supabaseUrl) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable. Please check your .env.local file.');
+// Check if we're in a build environment (no window object and NODE_ENV is not development)
+const isBuildTime = typeof window === 'undefined' && process.env.NODE_ENV !== 'development';
+
+// Only validate environment variables when not building and when actually needed
+if (!isBuildTime) {
+  if (!supabaseUrl) {
+    console.warn('Missing NEXT_PUBLIC_SUPABASE_URL environment variable. Please check your .env.local file.');
+  }
+
+  if (!supabaseAnonKey) {
+    console.warn('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable. Please check your .env.local file.');
+  }
 }
 
-if (!supabaseAnonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable. Please check your .env.local file.');
-}
+// Create a function to get the supabase client that validates at runtime
+const createSupabaseClient = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    if (!isBuildTime) {
+      throw new Error('Supabase environment variables are missing. Please check your environment configuration.');
+    }
+    // Return a mock client during build time
+    return createClient('https://placeholder.supabase.co', 'placeholder-key');
+  }
+  return createClient(supabaseUrl, supabaseAnonKey);
+};
 
 // Public client for frontend operations
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createSupabaseClient();
 
 // Admin client for server-side operations (only use on server-side)
 // This will only be created when actually used in API routes
