@@ -445,8 +445,8 @@ export default function PrivateDelegateRegistration() {
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-600">
                 Need help? Contact us at{' '}
-                <a href="mailto:info@fimmun.org" className="text-blue-600 hover:text-blue-800">
-                  info@fimmun.org
+                <a href="mailto:fimmunv@gmail.com" className="text-blue-600 hover:text-blue-800">
+                  fimmunv@gmail.com
                 </a>
               </p>
             </div>

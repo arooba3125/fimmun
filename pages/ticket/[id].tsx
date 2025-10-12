@@ -254,7 +254,7 @@ export default function Ticket() {
             {/* Ticket Footer */}
             <div className="bg-gray-50 px-8 py-4 border-t border-gray-200">
               <p className="text-xs text-gray-500 text-center">
-                For queries, contact: info@fimmun.org | This ticket is non-transferable and valid for the registered participant only
+                For queries, contact: fimmunv@gmail.com | This ticket is non-transferable and valid for the registered participant only
               </p>
             </div>
           </div>
