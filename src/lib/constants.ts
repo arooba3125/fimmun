@@ -155,28 +155,6 @@ export const MUN_CONSTANTS = {
     ]
   },
   
-  // Testimonials
-  testimonials: [
-    {
-      name: "M.Huzaifa",
-      role: "Former Delegate, HRC",
-      quote: "FICMUN was a transformative experience that taught me the art of diplomacy and negotiation. The quality of debate and the expertise of the chairs made it an unforgettable learning journey.",
-      rating: 5
-    },
-    {
-      name: "Shaheer Raza",
-      role: "Former Delegate, Security Council",
-      quote: "The conference provided me with invaluable skills in public speaking and critical thinking. The networking opportunities were exceptional, and I made friends for life.",
-      rating: 5
-    },
-    {
-      name: "Ayesha Khan",
-      role: "Former Delegate, UNGA",
-      quote: "FICMUN exceeded all my expectations. The organization was flawless, and the learning experience was unparalleled. Highly recommended for anyone interested in international relations.",
-      rating: 5
-    }
-  ],
-  
   // Statistics
   stats: [
     { number: "500+", label: "Expected Delegates" },

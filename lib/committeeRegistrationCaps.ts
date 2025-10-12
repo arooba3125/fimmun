@@ -171,6 +171,66 @@ export async function updateCommitteeRegistrationCaps(caps: { committee_name: st
 }
 
 /**
+ * Manually adjust the current_count for a specific committee
+ * @param committeeName - The name of the committee to adjust
+ * @param adjustment - The amount to adjust (positive to increase, negative to decrease)
+ * @returns Promise<{ success: boolean; newCount?: number; error?: string }> 
+ */
+export async function manuallyAdjustCommitteeCount(
+  committeeName: string, 
+  adjustment: number
+): Promise<{ success: boolean; newCount?: number; error?: string }> {
+  try {
+    const supabaseAdmin = createAdminClient();
+    
+    // First, get the current count and capacity
+    const { data: cap, error: fetchError } = await supabaseAdmin
+      .from('committee_registration_caps')
+      .select('current_count, max_capacity')
+      .eq('committee_name', committeeName)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching committee registration cap:', fetchError);
+      return { success: false, error: 'Failed to fetch committee data' };
+    }
+
+    if (!cap) {
+      console.error(`Committee registration cap not found: ${committeeName}`);
+      return { success: false, error: 'Committee not found' };
+    }
+
+    // Calculate new count
+    const newCount = Math.max(0, cap.current_count + adjustment);
+
+    // Optional: Check if new count exceeds capacity (warning but not blocking)
+    if (newCount > cap.max_capacity) {
+      console.warn(`Manual adjustment will exceed capacity for ${committeeName}: ${newCount} > ${cap.max_capacity}`);
+    }
+
+    // Update the count
+    const { error: updateError } = await supabaseAdmin
+      .from('committee_registration_caps')
+      .update({ 
+        current_count: newCount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('committee_name', committeeName);
+
+    if (updateError) {
+      console.error('Error updating committee registration count:', updateError);
+      return { success: false, error: 'Failed to update count' };
+    }
+
+    console.log(`Successfully adjusted registration count for ${committeeName}: ${cap.current_count} -> ${newCount} (${adjustment > 0 ? '+' : ''}${adjustment})`);
+    return { success: true, newCount };
+  } catch (error) {
+    console.error('Error in manuallyAdjustCommitteeCount:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
  * Reset all committee registration counts to 0 (for admin use)
  * @returns Promise<boolean> - true if successful, false otherwise
  */

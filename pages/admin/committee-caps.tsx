@@ -14,6 +14,7 @@ export default function CommitteeCaps() {
   const [caps, setCaps] = useState<CommitteeCap[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -75,6 +76,55 @@ export default function CommitteeCaps() {
     }
   };
 
+  const handleManualAdjustment = async (committeeName: string, adjustment: number) => {
+    setUpdating(committeeName);
+    setMessage(null);
+
+    console.log('Sending manual adjustment request:', { committeeName, adjustment });
+
+    try {
+      const response = await fetch('/api/admin/manual-committee-adjustment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          committeeName,
+          adjustment,
+          reason: 'Manual on-campus registration'
+        })
+      });
+
+      const data = await response.json();
+      console.log('Manual adjustment response:', data);
+
+      if (data.success) {
+        setMessage({ 
+          type: 'success', 
+          text: `Successfully ${adjustment > 0 ? 'increased' : 'decreased'} ${committeeName} count by ${Math.abs(adjustment)}. New count: ${data.newCount}` 
+        });
+        fetchCaps(); // Refresh the data
+        
+        // Clear message after 5 seconds
+        setTimeout(() => setMessage(null), 5000);
+      } else {
+        console.error('Manual adjustment failed:', data);
+        setMessage({ 
+          type: 'error', 
+          text: `Failed to adjust count: ${data.error || 'Unknown error'}${data.details ? ` (${data.details})` : ''}`
+        });
+      }
+    } catch (error) {
+      console.error('Error calling manual adjustment API:', error);
+      setMessage({ 
+        type: 'error', 
+        text: `Network error: ${error instanceof Error ? error.message : 'Failed to connect to server'}`
+      });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   const handleReset = async () => {
     if (!confirm('Are you sure you want to reset all committee registration counts to 0? This action cannot be undone.')) {
       return;
@@ -133,6 +183,16 @@ export default function CommitteeCaps() {
               <p className="mt-2 text-gray-600">
                 Manage registration capacity limits and view current counts for each committee
               </p>
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm text-blue-800">
+                    <strong>Manual Adjustments:</strong> Use the +1 and -1 buttons to manually adjust delegate counts for on-campus registrations or corrections.
+                  </div>
+                </div>
+              </div>
             </div>
 
             {message && (
@@ -152,10 +212,12 @@ export default function CommitteeCaps() {
                   
                   <div className="space-y-4">
                     {caps.map((cap, index) => (
-                      <div key={cap.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-200 rounded-lg">
+                      <div key={cap.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-gray-200 rounded-lg">
                         <div className="md:col-span-2">
                           <h3 className="font-medium text-gray-900">{cap.committee_name}</h3>
-                          <p className="text-sm text-gray-500">Current: {cap.current_count}</p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            <span className="text-xs text-gray-400">Max capacity: {cap.max_capacity}</span>
+                          </p>
                         </div>
                         
                         <div>
@@ -169,6 +231,33 @@ export default function CommitteeCaps() {
                             onChange={(e) => handleCapChange(index, 'max_capacity', parseInt(e.target.value) || 1)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                           />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Manual Adjust
+                          </label>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleManualAdjustment(cap.committee_name, -1)}
+                              disabled={updating === cap.committee_name || cap.current_count === 0}
+                              className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Decrease by 1"
+                            >
+                              -1
+                            </button>
+                            <div className="flex items-center justify-center min-w-[60px] px-3 py-2 bg-blue-600 text-white font-bold rounded-md">
+                              {cap.current_count}
+                            </div>
+                            <button
+                              onClick={() => handleManualAdjustment(cap.committee_name, 1)}
+                              disabled={updating === cap.committee_name}
+                              className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Increase by 1"
+                            >
+                              +1
+                            </button>
+                          </div>
                         </div>
                         
                         <div className="flex items-end">

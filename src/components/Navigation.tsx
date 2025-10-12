@@ -63,12 +63,6 @@ export default function Navigation() {
               Registration
             </button>
             <button 
-              onClick={() => scrollToSection('testimonials')}
-              className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300"
-            >
-              Testimonials
-            </button>
-            <button 
               onClick={() => scrollToSection('registration')}
               className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors duration-300"
             >
@@ -120,12 +114,6 @@ export default function Navigation() {
                 className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md font-medium transition-colors duration-300"
               >
                 Registration
-              </button>
-              <button 
-                onClick={() => scrollToSection('testimonials')}
-                className="block w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md font-medium transition-colors duration-300"
-              >
-                Testimonials
               </button>
               <button 
                 onClick={() => scrollToSection('registration')}
