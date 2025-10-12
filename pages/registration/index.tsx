@@ -1,7 +1,28 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function RegistrationOptions() {
+  const [isAlumniActive, setIsAlumniActive] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAlumniStatus = async () => {
+      try {
+        const response = await fetch('/api/registration-status/alumni');
+        const data = await response.json();
+        if (data.success) {
+          setIsAlumniActive(data.isActive);
+        }
+      } catch (error) {
+        console.error('Error checking alumni registration status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAlumniStatus();
+  }, []);
+
   return (
     <>
       <Head>
@@ -123,7 +144,15 @@ export default function RegistrationOptions() {
             </div>
 
             {/* Alumni */}
-            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow relative">
+              {!loading && !isAlumniActive && (
+                <div className="absolute top-4 right-4">
+                  <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+                    Opening Soon
+                  </span>
+                </div>
+              )}
+              
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -163,12 +192,21 @@ export default function RegistrationOptions() {
                 </div>
               </div>
 
-              <Link
-                href="/registration/alumni"
-                className="w-full inline-block text-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Register as Alumni
-              </Link>
+              {isAlumniActive ? (
+                <Link
+                  href="/registration/alumni"
+                  className="w-full inline-block text-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Register as Alumni
+                </Link>
+              ) : (
+                <Link
+                  href="/registration/alumni"
+                  className="w-full inline-block text-center px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg cursor-pointer hover:bg-gray-500 transition-colors"
+                >
+                  View Details (Opening Soon)
+                </Link>
+              )}
             </div>
 
             {/* Delegation */}

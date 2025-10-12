@@ -371,7 +371,6 @@ export default function DelegationMemberRegistration() {
                   placeholder="Enter your school/college name"
                   />
                 </div>
-              </div>
 
               {/* MUN Experience */}
               <div>

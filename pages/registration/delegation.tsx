@@ -392,7 +392,6 @@ export default function DelegationRegistration() {
                       placeholder="Enter head delegate institution"
                     />
                   </div>
-                </div>
 
                 <div className="mt-6">
                   <label htmlFor="head_delegate_experience" className="block text-sm font-medium text-gray-700 mb-2">

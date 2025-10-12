@@ -32,8 +32,26 @@ export default function AlumniRegistration() {
   const [success, setSuccess] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [referralSources, setReferralSources] = useState<ReferralSource[]>([]);
+  const [isRegistrationActive, setIsRegistrationActive] = useState<boolean | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
 
   useEffect(() => {
+    // Check if alumni registration is active
+    const checkRegistrationStatus = async () => {
+      try {
+        const response = await fetch('/api/registration-status/alumni');
+        const data = await response.json();
+        if (data.success) {
+          setIsRegistrationActive(data.isActive);
+        }
+      } catch (error) {
+        console.error('Error checking registration status:', error);
+        setIsRegistrationActive(false); // Default to closed on error
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+
     // Fetch referral sources on component mount
     const fetchReferralSources = async () => {
       try {
@@ -46,6 +64,8 @@ export default function AlumniRegistration() {
         console.error('Error fetching referral sources:', error);
       }
     };
+
+    checkRegistrationStatus();
     fetchReferralSources();
   }, []);
 
@@ -148,6 +168,115 @@ export default function AlumniRegistration() {
               >
                 Back to Home
               </Link>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Show loading state while checking registration status
+  if (statusLoading) {
+    return (
+      <>
+        <Head>
+          <title>Alumni Registration - FIMMUN 2025</title>
+          <meta name="description" content="Register as alumni for FIMMUN 2025" />
+        </Head>
+
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Checking registration status...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Show "WILL BE OPENED SOON" message if registration is not active
+  if (!isRegistrationActive) {
+    return (
+      <>
+        <Head>
+          <title>Alumni Registration - FIMMUN 2025</title>
+          <meta name="description" content="Register as alumni for FIMMUN 2025" />
+        </Head>
+
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-indigo-100">
+          {/* Navigation */}
+          <nav className="bg-white shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-4">
+                <Link href="/" className="text-2xl font-bold text-blue-600">
+                  FIMMUN 2025
+                </Link>
+                <div className="flex space-x-4">
+                  <Link href="/registration" className="text-blue-600 hover:text-blue-800 transition-colors">
+                    Registration Options
+                  </Link>
+                  <Link href="/status-checker" className="text-gray-600 hover:text-gray-800 transition-colors">
+                    Status Checker
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">Alumni Registration</h1>
+                
+                <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-8">
+                  <h2 className="text-2xl font-bold text-yellow-800 mb-3">WILL BE OPENED SOON</h2>
+                  <p className="text-yellow-700 text-lg">
+                    Alumni registration is currently not active. Please check back later for updates.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-3">What to Expect</h3>
+                  <ul className="text-sm text-blue-800 space-y-2 text-left">
+                    <li>• Alumni will arrive on 2nd day only (22 November)</li>
+                    <li>• You can observe committee sessions on the 2nd day</li>
+                    <li>• Enjoy the social evening and exclusive reunion party</li>
+                    <li>• Attend the formal dinner hosted for alumni</li>
+                    <li>• Only Ex-Minhasians are eligible for this category</li>
+                    <li>• Registration fee: PKR 2,000</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <Link
+                    href="/registration"
+                    className="w-full inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    View Other Registration Options
+                  </Link>
+                  <Link
+                    href="/"
+                    className="w-full inline-block px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Back to Home
+                  </Link>
+                </div>
+
+                <div className="mt-8">
+                  <p className="text-sm text-gray-600">
+                    For updates, follow us on social media or contact us at{' '}
+                    <a href="mailto:info@fimmun.org" className="text-blue-600 hover:text-blue-800">
+                      info@fimmun.org
+                    </a>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

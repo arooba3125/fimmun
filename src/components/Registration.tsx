@@ -15,6 +15,7 @@ interface CommitteeCap {
 export default function Registration() {
   const [committeeCaps, setCommitteeCaps] = useState<CommitteeCap[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAlumniActive, setIsAlumniActive] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchCommitteeCaps = async () => {
@@ -44,7 +45,20 @@ export default function Registration() {
       }
     };
 
+    const checkAlumniStatus = async () => {
+      try {
+        const response = await fetch('/api/registration-status/alumni');
+        const data = await response.json();
+        if (data.success) {
+          setIsAlumniActive(data.isActive);
+        }
+      } catch (error) {
+        console.error('Error checking alumni registration status:', error);
+      }
+    };
+
     fetchCommitteeCaps();
+    checkAlumniStatus();
   }, []);
 
   const getTotalDelegatesCap = () => {
@@ -163,7 +177,15 @@ export default function Registration() {
           </div>
 
           {/* Alumni */}
-          <div className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300 relative">
+            {!isAlumniActive && (
+              <div className="absolute top-4 right-4">
+                <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+                  Opening Soon
+                </span>
+              </div>
+            )}
+            
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -203,9 +225,13 @@ export default function Registration() {
             
             <Link
               href="/registration/alumni"
-              className="w-full inline-block text-center py-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-300 shadow-lg"
+              className={`w-full inline-block text-center py-4 font-semibold rounded-lg transition-colors duration-300 shadow-lg ${
+                isAlumniActive
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-gray-400 text-white hover:bg-gray-500'
+              }`}
             >
-              Register as Alumni
+              {isAlumniActive ? 'Register as Alumni' : 'View Details (Opening Soon)'}
             </Link>
           </div>
 
