@@ -23,9 +23,14 @@ export const createAdminClient = () => {
   }
   
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceKey || serviceKey.includes('PLACEHOLDER')) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for admin operations. Please get your service role key from Supabase Dashboard > Settings > API');
+  if (!serviceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for admin operations. Please check your .env.local file.');
   }
+  
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is required for admin operations');
+  }
+  
   return createClient(supabaseUrl, serviceKey);
 };
 
