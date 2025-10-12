@@ -35,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const whatsapp = Array.isArray(fields.whatsapp) ? fields.whatsapp[0] : fields.whatsapp;
     const institution = Array.isArray(fields.institution) ? fields.institution[0] : fields.institution;
     const mun_experience = Array.isArray(fields.mun_experience) ? fields.mun_experience[0] : fields.mun_experience;
+    const referral_source_id = Array.isArray(fields.referral_source_id) ? fields.referral_source_id[0] : fields.referral_source_id;
 
     // Handle file upload
     let payment_proof_url = null;
@@ -68,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validation
-    if (!name || !email || !whatsapp || !institution) {
+    if (!name || !email || !whatsapp || !institution || !referral_source_id) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
@@ -116,6 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         institution,
         mun_experience: mun_experience || null,
         payment_proof_url,
+        referral_source_id,
         verification_code: verificationCode,
         status: 'pending',
         created_at: new Date().toISOString(),

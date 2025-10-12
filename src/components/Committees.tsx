@@ -40,7 +40,6 @@ function CommitteeModal({ committee, isOpen, onClose }: CommitteeModalProps) {
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">{committee.name}</h3>
-              <p className="text-blue-600 font-semibold">{committee.description || 'Committee Information'}</p>
             </div>
             <button
               onClick={onClose}
@@ -323,9 +322,6 @@ export default function Committees() {
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
                       {committee.name}
                     </h3>
-                    <p className="text-blue-600 font-semibold mb-4">
-                      {committee.description || 'Description will be announced soon'}
-                    </p>
                   </div>
                   <div className="ml-4">
                     <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">

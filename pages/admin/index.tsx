@@ -67,9 +67,6 @@ export default function AdminLogin() {
         
         <div className="max-w-md w-full space-y-8 relative z-10">
           <div className="text-center">
-            <div className="mx-auto h-24 w-24 bg-white/10 backdrop-blur-lg rounded-2xl flex items-center justify-center mb-8 border border-white/20 shadow-2xl">
-              <span className="text-3xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">F</span>
-            </div>
             <h2 className="text-4xl font-extrabold text-white mb-2">
               FIMMUN Admin Portal
             </h2>

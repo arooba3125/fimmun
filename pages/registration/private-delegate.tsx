@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -9,7 +9,13 @@ interface FormData {
   institution: string;
   mun_experience: string;
   committee_preference: string;
+  referral_source_id: string;
   payment_proof: File | null;
+}
+
+interface ReferralSource {
+  id: string;
+  name: string;
 }
 
 const COMMITTEES = [
@@ -30,14 +36,32 @@ export default function PrivateDelegateRegistration() {
     institution: '',
     mun_experience: '',
     committee_preference: '',
+    referral_source_id: '',
     payment_proof: null
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [referralSources, setReferralSources] = useState<ReferralSource[]>([]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    // Fetch referral sources on component mount
+    const fetchReferralSources = async () => {
+      try {
+        const response = await fetch('/api/referral-sources');
+        const data = await response.json();
+        if (data.success) {
+          setReferralSources(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching referral sources:', error);
+      }
+    };
+    fetchReferralSources();
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -68,7 +92,7 @@ export default function PrivateDelegateRegistration() {
     setError('');
 
     // Validation
-    if (!formData.name || !formData.email || !formData.whatsapp || !formData.institution || !formData.payment_proof) {
+    if (!formData.name || !formData.email || !formData.whatsapp || !formData.institution || !formData.payment_proof || !formData.referral_source_id) {
       setError('All required fields must be filled');
       setLoading(false);
       return;
@@ -89,6 +113,7 @@ export default function PrivateDelegateRegistration() {
       submitData.append('institution', formData.institution);
       submitData.append('mun_experience', formData.mun_experience);
       submitData.append('committee_preference', formData.committee_preference);
+      submitData.append('referral_source_id', formData.referral_source_id);
       submitData.append('payment_proof', formData.payment_proof);
 
       const response = await fetch('/api/registrations/private-delegate', {
@@ -298,6 +323,28 @@ export default function PrivateDelegateRegistration() {
                     </label>
                   ))}
                 </div>
+              </div>
+
+              {/* Referral Source */}
+              <div>
+                <label htmlFor="referral_source_id" className="block text-sm font-medium text-gray-700 mb-2">
+                  How did you hear about us? *
+                </label>
+                <select
+                  id="referral_source_id"
+                  name="referral_source_id"
+                  value={formData.referral_source_id}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select an option</option>
+                  {referralSources.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Payment Information */}

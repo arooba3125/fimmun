@@ -35,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const whatsapp = Array.isArray(fields.whatsapp) ? fields.whatsapp[0] : fields.whatsapp;
     const institution = Array.isArray(fields.institution) ? fields.institution[0] : fields.institution;
     const mun_experience = Array.isArray(fields.mun_experience) ? fields.mun_experience[0] : fields.mun_experience;
+    const referral_source_id = Array.isArray(fields.referral_source_id) ? fields.referral_source_id[0] : fields.referral_source_id;
     // Handle both committee_preference (singular) and committee_preferences (plural)
     let committee_preferences = [];
     
@@ -83,7 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validation
-    if (!name || !email || !whatsapp || !institution || !committee_preferences) {
+    if (!name || !email || !whatsapp || !institution || !committee_preferences || !referral_source_id) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
@@ -132,6 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         mun_experience: mun_experience || null,
         committee_preferences,
         payment_proof_url,
+        referral_source_id,
         verification_code: verificationCode,
         status: 'pending',
         created_at: new Date().toISOString(),

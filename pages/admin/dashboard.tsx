@@ -538,6 +538,28 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
+          {/* Additional Management Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <Link href="/admin/referral-sources" className="group">
+              <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Referral Sources</h3>
+                    <p className="text-sm text-gray-600">Manage how attendees found us</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Track marketing and referral channels
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-teal-200 transition-colors">
+                    <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+
           {/* Recent Registrations */}
           {stats && stats.recent_registrations.length > 0 && (
             <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6">

@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const institution = Array.isArray(fields.institution) ? fields.institution[0] : fields.institution;
     const mun_experience = Array.isArray(fields.mun_experience) ? fields.mun_experience[0] : fields.mun_experience;
     const committee_preference = Array.isArray(fields.committee_preference) ? fields.committee_preference[0] : fields.committee_preference;
+    const referral_source_id = Array.isArray(fields.referral_source_id) ? fields.referral_source_id[0] : fields.referral_source_id;
 
     // Handle file upload
     let payment_proof_url = '';
@@ -70,14 +71,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validation
-    if (!delegation_serial || !name || !email || !whatsapp || !institution || !committee_preference) {
+    if (!delegation_serial || !name || !email || !whatsapp || !institution || !committee_preference || !referral_source_id) {
       console.error('Validation failed:', {
         delegation_serial: !!delegation_serial,
         name: !!name,
         email: !!email,
         whatsapp: !!whatsapp,
         institution: !!institution,
-        committee_preference: !!committee_preference
+        committee_preference: !!committee_preference,
+        referral_source_id: !!referral_source_id
       });
       return res.status(400).json({
         success: false,
@@ -256,6 +258,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       institution,
       mun_experience: mun_experience || '',
       payment_proof_url,
+      referral_source_id,
       verification_code: verificationCode,
       status: 'pending',
       created_at: new Date().toISOString(),

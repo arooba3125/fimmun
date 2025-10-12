@@ -11,8 +11,7 @@ export const MUN_CONSTANTS = {
   
   // Contact Information
   contact: {
-    email: "info@ficmun.org",
-    phone: "+92-XXX-XXXXXXX",
+    email: "fimmunv@gmail.com",
     address: "Fazaia Inter College Minhas, Pakistan"
   },
   
