@@ -65,6 +65,17 @@ export default function PrivateDelegateRegistration() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Special handling for CNIC field - only allow 13 digits
+    if (name === 'cnic') {
+      // Remove all non-digit characters
+      const digitsOnly = value.replace(/\D/g, '');
+      // Limit to 13 digits
+      const limitedDigits = digitsOnly.slice(0, 13);
+      setFormData(prev => ({ ...prev, [name]: limitedDigits }));
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -284,9 +295,13 @@ export default function PrivateDelegateRegistration() {
                     value={formData.cnic}
                     onChange={handleInputChange}
                     required
+                    inputMode="numeric"
+                    pattern="[0-9]{13}"
+                    maxLength={13}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="xxxxx-xxxxxxx-x"
+                    placeholder="Enter 13 digits only"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Enter 13 digits without dashes</p>
                 </div>
               </div>
 
