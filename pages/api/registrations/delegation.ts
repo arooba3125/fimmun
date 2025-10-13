@@ -101,6 +101,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Validate CNIC format (exactly 13 digits)
+    if (!head_delegate_cnic || head_delegate_cnic.length !== 13 || !/^\d{13}$/.test(head_delegate_cnic)) {
+      return res.status(400).json({
+        success: false,
+        message: 'CNIC must be exactly 13 digits'
+      });
+    }
+
     // Check if delegation name already exists
     const { data: existingDelegation } = await supabaseAdmin
       .from('delegations')
@@ -126,6 +134,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({
         success: false,
         message: 'Head delegate email already registered'
+      });
+    }
+
+    // Check if CNIC already exists across all registration tables
+    const cnicChecks = await Promise.all([
+      supabaseAdmin.from('alumni').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
+      supabaseAdmin.from('delegation_members').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
+      supabaseAdmin.from('observers').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
+      supabaseAdmin.from('private_delegates').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
+      supabaseAdmin.from('delegations').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle()
+    ]);
+
+    // Check if any table has this CNIC
+    const cnicExists = cnicChecks.some(({ data }) => data !== null);
+
+    if (cnicExists) {
+      return res.status(400).json({
+        success: false,
+        message: 'This CNIC is already registered. Each CNIC can only be registered once.'
       });
     }
 
@@ -189,6 +216,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: head_delegate_name,
         email: head_delegate_email,
         whatsapp: head_delegate_whatsapp,
+        cnic: head_delegate_cnic,
         institution: head_delegate_institution,
         mun_experience: head_delegate_experience || null,
         committee_preference: head_delegate_committee,

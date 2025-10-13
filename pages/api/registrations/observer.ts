@@ -77,6 +77,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Validate CNIC format (exactly 13 digits)
+    if (!cnic || cnic.length !== 13 || !/^\d{13}$/.test(cnic)) {
+      return res.status(400).json({
+        success: false,
+        message: 'CNIC must be exactly 13 digits'
+      });
+    }
+
     // Check if email already exists
     const { data: existingObserver } = await supabaseAdmin
       .from('observers')
@@ -88,6 +96,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({
         success: false,
         message: 'Email already registered'
+      });
+    }
+
+    // Check if CNIC already exists across all registration tables
+    const cnicChecks = await Promise.all([
+      supabaseAdmin.from('alumni').select('cnic').eq('cnic', cnic).maybeSingle(),
+      supabaseAdmin.from('delegation_members').select('cnic').eq('cnic', cnic).maybeSingle(),
+      supabaseAdmin.from('observers').select('cnic').eq('cnic', cnic).maybeSingle(),
+      supabaseAdmin.from('private_delegates').select('cnic').eq('cnic', cnic).maybeSingle(),
+      supabaseAdmin.from('delegations').select('cnic').eq('cnic', cnic).maybeSingle()
+    ]);
+
+    // Check if any table has this CNIC
+    const cnicExists = cnicChecks.some(({ data }) => data !== null);
+
+    if (cnicExists) {
+      return res.status(400).json({
+        success: false,
+        message: 'This CNIC is already registered. Each CNIC can only be registered once.'
       });
     }
 

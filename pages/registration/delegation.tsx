@@ -116,6 +116,13 @@ export default function DelegationRegistration() {
       return;
     }
 
+    // Validate CNIC format (exactly 13 digits)
+    if (formData.head_delegate_cnic.length !== 13 || !/^\d{13}$/.test(formData.head_delegate_cnic)) {
+      setError('CNIC must be exactly 13 digits');
+      setLoading(false);
+      return;
+    }
+
     if (!formData.head_delegate_committee) {
       setError('Please select a committee for the head delegate');
       setLoading(false);

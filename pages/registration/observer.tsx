@@ -92,6 +92,13 @@ export default function ObserverRegistration() {
       return;
     }
 
+    // Validate CNIC format (exactly 13 digits)
+    if (formData.cnic.length !== 13 || !/^\d{13}$/.test(formData.cnic)) {
+      setError('CNIC must be exactly 13 digits');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Create FormData for file upload
       const submitData = new FormData();
