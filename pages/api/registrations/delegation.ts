@@ -138,16 +138,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Check if CNIC already exists across all registration tables
-    const cnicChecks = await Promise.all([
-      supabaseAdmin.from('alumni').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
-      supabaseAdmin.from('delegation_members').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
-      supabaseAdmin.from('observers').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
-      supabaseAdmin.from('private_delegates').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle(),
-      supabaseAdmin.from('delegations').select('cnic').eq('cnic', head_delegate_cnic).maybeSingle()
+    const [alumniCheck, delegationMembersCheck, observersCheck, privateDelegatesCheck, delegationsCheck] = await Promise.all([
+      supabaseAdmin.from('alumni').select('cnic', { count: 'exact', head: true }).eq('cnic', head_delegate_cnic),
+      supabaseAdmin.from('delegation_members').select('cnic', { count: 'exact', head: true }).eq('cnic', head_delegate_cnic),
+      supabaseAdmin.from('observers').select('cnic', { count: 'exact', head: true }).eq('cnic', head_delegate_cnic),
+      supabaseAdmin.from('private_delegates').select('cnic', { count: 'exact', head: true }).eq('cnic', head_delegate_cnic),
+      supabaseAdmin.from('delegations').select('cnic', { count: 'exact', head: true }).eq('cnic', head_delegate_cnic)
     ]);
 
-    // Check if any table has this CNIC
-    const cnicExists = cnicChecks.some(({ data }) => data !== null);
+    // Check if any table has this CNIC (count > 0)
+    const cnicExists = 
+      (alumniCheck.count && alumniCheck.count > 0) ||
+      (delegationMembersCheck.count && delegationMembersCheck.count > 0) ||
+      (observersCheck.count && observersCheck.count > 0) ||
+      (privateDelegatesCheck.count && privateDelegatesCheck.count > 0) ||
+      (delegationsCheck.count && delegationsCheck.count > 0);
 
     if (cnicExists) {
       return res.status(400).json({
