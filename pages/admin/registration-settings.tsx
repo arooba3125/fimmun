@@ -141,21 +141,21 @@ export default function AdminRegistrationSettings() {
         {/* Navigation */}
         <nav className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center space-x-4">
-                <Link href="/admin/dashboard" className="text-2xl font-bold text-blue-600">
+            <div className="flex flex-col space-y-3 py-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <Link href="/admin/dashboard" className="text-xl sm:text-2xl font-bold text-blue-600">
                   FIMMUN Admin
                 </Link>
-                <span className="text-gray-400">|</span>
-                <span className="text-gray-600">Registration Settings</span>
+                <span className="text-gray-400 hidden sm:inline">|</span>
+                <span className="text-sm sm:text-base text-gray-600">Registration Settings</span>
               </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
+              <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+                <span className="text-xs sm:text-sm text-gray-600">
                   {user?.name} ({user?.role})
                 </span>
                 <Link
                   href="/admin/dashboard"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-center"
                 >
                   Back to Dashboard
                 </Link>
@@ -167,9 +167,9 @@ export default function AdminRegistrationSettings() {
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Registration Settings</h1>
-            <p className="text-gray-600">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Registration Settings</h1>
+            <p className="text-sm sm:text-base text-gray-600">
               Control which registration types are active or inactive
             </p>
           </div>
@@ -199,16 +199,16 @@ export default function AdminRegistrationSettings() {
           )}
 
           {/* Settings Cards */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {settings.map((setting) => (
-              <div key={setting.id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900">
+              <div key={setting.id} className="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                         {getSettingDisplayName(setting.setting_key)}
                       </h3>
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      <span className={`self-start px-3 py-1 text-xs font-semibold rounded-full ${
                         setting.setting_value
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
@@ -217,36 +217,36 @@ export default function AdminRegistrationSettings() {
                       </span>
                     </div>
                     {setting.description && (
-                      <p className="text-gray-600 mb-4">{setting.description}</p>
+                      <p className="text-sm sm:text-base text-gray-600 mb-4">{setting.description}</p>
                     )}
-                    <div className="text-sm text-gray-500 space-y-1">
+                    <div className="text-xs sm:text-sm text-gray-500 space-y-1">
                       <p>Last updated: {formatDate(setting.updated_at)}</p>
                       {setting.updated_by && (
-                        <p>Updated by: {setting.updated_by}</p>
+                        <p className="break-words">Updated by: {setting.updated_by}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Toggle Button */}
-                  <div className="ml-6">
+                  <div className="flex justify-center sm:justify-end sm:ml-6">
                     <button
                       onClick={() => handleToggleSetting(setting.setting_key, setting.setting_value)}
                       disabled={updating === setting.setting_key}
-                      className={`relative inline-flex h-12 w-24 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      className={`relative inline-flex h-10 w-20 sm:h-12 sm:w-24 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                         setting.setting_value
                           ? 'bg-green-600 focus:ring-green-500'
                           : 'bg-gray-300 focus:ring-gray-500'
                       } ${updating === setting.setting_key ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <span
-                        className={`inline-block h-10 w-10 transform rounded-full bg-white transition-transform ${
-                          setting.setting_value ? 'translate-x-12' : 'translate-x-1'
+                        className={`inline-block h-8 w-8 sm:h-10 sm:w-10 transform rounded-full bg-white transition-transform ${
+                          setting.setting_value ? 'translate-x-10 sm:translate-x-12' : 'translate-x-1'
                         }`}
                       />
                       <span className={`absolute text-xs font-medium ${
                         setting.setting_value
-                          ? 'left-2 text-white'
-                          : 'right-2 text-gray-700'
+                          ? 'left-1 sm:left-2 text-white'
+                          : 'right-1 sm:right-2 text-gray-700'
                       }`}>
                         {updating === setting.setting_key ? '...' : (setting.setting_value ? 'ON' : 'OFF')}
                       </span>
@@ -256,12 +256,12 @@ export default function AdminRegistrationSettings() {
 
                 {/* Impact Info */}
                 {setting.setting_key === 'alumni_registration_active' && (
-                  <div className={`mt-4 p-4 rounded-lg ${
+                  <div className={`mt-4 p-3 sm:p-4 rounded-lg ${
                     setting.setting_value
                       ? 'bg-green-50 border border-green-200'
                       : 'bg-yellow-50 border border-yellow-200'
                   }`}>
-                    <p className={`text-sm ${
+                    <p className={`text-xs sm:text-sm ${
                       setting.setting_value ? 'text-green-800' : 'text-yellow-800'
                     }`}>
                       {setting.setting_value ? (
@@ -282,14 +282,14 @@ export default function AdminRegistrationSettings() {
           </div>
 
           {/* Info Card */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-start">
-              <svg className="w-6 h-6 text-blue-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mt-6 sm:mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-start sm:space-y-0">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 sm:mr-3 sm:mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <div>
-                <h4 className="text-lg font-semibold text-blue-900 mb-2">About Registration Settings</h4>
-                <ul className="text-sm text-blue-800 space-y-2">
+              <div className="min-w-0">
+                <h4 className="text-base sm:text-lg font-semibold text-blue-900 mb-2">About Registration Settings</h4>
+                <ul className="text-xs sm:text-sm text-blue-800 space-y-1 sm:space-y-2">
                   <li>• Changes take effect immediately - no server restart required</li>
                   <li>• Users will see updated status when they reload the page</li>
                   <li>• All changes are logged with timestamp and admin email</li>

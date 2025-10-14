@@ -157,7 +157,7 @@ export const MUN_CONSTANTS = {
   
   // Statistics
   stats: [
-    { number: "500+", label: "Expected Delegates" },
+    { number: "500+", label: "Expected Participants" },
     { number: "10+", label: "Schools Participating" },
     { number: "7", label: "Expert Committees" },
     { number: "3", label: "Days of Diplomacy" }
