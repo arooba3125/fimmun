@@ -43,13 +43,13 @@ export async function verifyTokenWithBlacklist(token: string): Promise<{ valid: 
     }
 
     return { valid: true, decoded };
-  } catch (error) {
+  } catch {
     return { valid: false, error: 'Invalid token' };
   }
 }
 
 // Middleware function to authenticate admin requests
-export async function authenticateAdmin(req: NextApiRequest, res: NextApiResponse): Promise<{ success: boolean; user?: JwtPayload; error?: string }> {
+export async function authenticateAdmin(req: NextApiRequest): Promise<{ success: boolean; user?: JwtPayload; error?: string }> {
   const token = getTokenFromRequest(req);
   
   if (!token) {
@@ -68,7 +68,7 @@ export async function authenticateAdmin(req: NextApiRequest, res: NextApiRespons
 // Higher-order function to wrap API routes with authentication
 export function withAuth(handler: (req: NextApiRequest, res: NextApiResponse, user: JwtPayload) => Promise<void>) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    const auth = await authenticateAdmin(req, res);
+    const auth = await authenticateAdmin(req);
     
     if (!auth.success) {
       return res.status(401).json({ message: auth.error });

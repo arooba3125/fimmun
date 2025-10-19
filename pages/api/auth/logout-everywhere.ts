@@ -12,10 +12,10 @@ function getTokenFromRequest(req: NextApiRequest): string | null {
 }
 
 // Helper function to verify and decode JWT token
-function verifyToken(token: string): any {
+function verifyToken(token: string): jwt.JwtPayload | null {
   try {
-    return jwt.verify(token, process.env.ADMIN_JWT_SECRET!);
-  } catch (error) {
+    return jwt.verify(token, process.env.ADMIN_JWT_SECRET!) as jwt.JwtPayload;
+  } catch {
     return null;
   }
 }
@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .insert({
         token_jti: decoded.jti || token,
         user_id: decoded.id,
-        expires_at: new Date(decoded.exp * 1000).toISOString(),
+        expires_at: new Date((decoded.exp || 0) * 1000).toISOString(),
         reason: 'manual_logout'
       });
 
