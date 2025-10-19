@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import { verifyTokenWithBlacklist } from '../../../lib/authMiddleware';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -12,18 +12,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: 'No token provided' });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET || 'fallback-secret') as JwtPayload;
-    
-    res.status(200).json({
-      success: true,
-      user: {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role
-      }
-    });
-  } catch {
-    res.status(401).json({ message: 'Invalid token' });
+  const verification = await verifyTokenWithBlacklist(token);
+  
+  if (!verification.valid) {
+    return res.status(401).json({ message: verification.error });
   }
+
+  res.status(200).json({
+    success: true,
+    user: {
+      id: verification.decoded!.id,
+      email: verification.decoded!.email,
+      role: verification.decoded!.role
+    }
+  });
 }

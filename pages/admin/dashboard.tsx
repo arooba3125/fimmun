@@ -180,14 +180,34 @@ export default function AdminDashboard() {
                   <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem('adminToken');
+                      if (token) {
+                        const response = await fetch('/api/auth/logout-everywhere', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                          },
+                        });
+                        
+                        if (response.ok) {
+                          alert('All admin sessions have been invalidated. Everyone will need to log in again.');
+                        }
+                      }
+                    } catch (error) {
+                      console.error('Error logging out everyone:', error);
+                    }
+                    
+                    // Always clear local storage and redirect
                     localStorage.removeItem('adminToken');
                     localStorage.removeItem('adminUser');
                     router.push('/admin');
                   }}
                   className="px-3 py-2 text-sm text-red-600 hover:text-red-800 transition-colors"
                 >
-                  Logout
+                  Logout Everyone
                 </button>
               </div>
             </div>
@@ -483,6 +503,49 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
+          </div>
+
+          {/* Security Actions */}
+          <div className="bg-white/60 backdrop-blur-lg rounded-xl border border-white/20 shadow-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Actions</h3>
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={async () => {
+                  if (confirm('Are you sure you want to logout all admin users? This will force everyone to log in again.')) {
+                    try {
+                      const token = localStorage.getItem('adminToken');
+                      if (token) {
+                        const response = await fetch('/api/auth/logout-everywhere', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                          },
+                        });
+                        
+                        if (response.ok) {
+                          alert('All admin sessions have been invalidated. Everyone will need to log in again.');
+                        } else {
+                          alert('Failed to logout everyone. Please try again.');
+                        }
+                      }
+                    } catch (error) {
+                      console.error('Error logging out everyone:', error);
+                      alert('An error occurred. Please try again.');
+                    }
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Force Logout Everyone
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              This will invalidate all admin sessions and force all users to log in again.
+            </p>
           </div>
 
           {/* Additional Management Links */}
