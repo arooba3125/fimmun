@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { createAdminClient } from '../../../lib/supabaseClient';
 import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: string; email: string }) {
   const supabaseAdmin = createAdminClient();
 
   // User creation and password changes are disabled

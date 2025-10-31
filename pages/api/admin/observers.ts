@@ -3,7 +3,7 @@ import { createAdminClient } from '../../../lib/supabaseClient';
 import { generateUniqueSerialNumber, SERIAL_NUMBER_CATEGORIES } from '../../../lib/serialNumberUtils';
 import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: string; email: string }) {
   const supabaseAdmin = createAdminClient();
 
   if (req.method === 'GET') {

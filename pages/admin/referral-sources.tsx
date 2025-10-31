@@ -26,21 +26,34 @@ export default function ReferralSourcesAdmin() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Check authentication first
-    const token = localStorage.getItem('adminToken');
-    const user = localStorage.getItem('adminUser');
+    const checkAuth = async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import('@/lib/supabaseBrowser');
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error || !session || !session.user) {
+          setError('Not authenticated. Redirecting to login...');
+          setLoading(false);
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 1500);
+          return;
+        }
+        
+        setIsAuthenticated(true);
+        fetchReferralSources();
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setError('Authentication failed. Redirecting to login...');
+        setLoading(false);
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 1500);
+      }
+    };
     
-    if (!token || !user) {
-      setError('Not authenticated. Redirecting to login...');
-      setLoading(false);
-      setTimeout(() => {
-        window.location.href = '/admin';
-      }, 1500);
-      return;
-    }
-    
-    setIsAuthenticated(true);
-    fetchReferralSources();
+    checkAuth();
   }, []);
 
   const fetchReferralSources = async () => {

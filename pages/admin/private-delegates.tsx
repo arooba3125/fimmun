@@ -28,12 +28,25 @@ export default function AdminPrivateDelegates() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      router.push('/admin');
-      return;
-    }
-    fetchDelegates();
+    const checkAuth = async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import('@/lib/supabaseBrowser');
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error || !session || !session.user) {
+          router.replace('/admin/login');
+          return;
+        }
+
+        fetchDelegates();
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/admin/login');
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   const fetchDelegates = async () => {

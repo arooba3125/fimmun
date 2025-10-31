@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
 import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: string; email: string }) {
   const supabaseAdmin = createAdminClient();
 
   // GET - Fetch all registration settings

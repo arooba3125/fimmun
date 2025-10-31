@@ -6,7 +6,7 @@ import {
 } from '../../../lib/committeeRegistrationCaps';
 import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: string; email: string }) {
   if (req.method === 'GET') {
     // Get current committee registration caps
     try {

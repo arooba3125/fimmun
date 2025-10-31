@@ -29,17 +29,31 @@ export default function AdminRegistrationSettings() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('adminToken');
-    const userData = localStorage.getItem('adminUser');
+    const checkAuth = async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import('@/lib/supabaseBrowser');
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (!token || !userData) {
-      router.push('/admin');
-      return;
-    }
+        if (error || !session || !session.user) {
+          router.replace('/admin/login');
+          return;
+        }
 
-    setUser(JSON.parse(userData));
-    fetchSettings();
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email || 'Admin',
+          role: 'admin'
+        });
+        fetchSettings();
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/admin/login');
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   const fetchSettings = async () => {

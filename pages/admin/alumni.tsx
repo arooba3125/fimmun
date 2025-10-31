@@ -38,27 +38,37 @@ export default function AdminAlumni() {
 
   useEffect(() => {
     // Check authentication
-    const token = localStorage.getItem('adminToken');
-    const userData = localStorage.getItem('adminUser');
+    const checkAuth = async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import('@/lib/supabaseBrowser');
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (!token || !userData) {
-      router.push('/admin');
-      return;
-    }
+        if (error || !session || !session.user) {
+          router.replace('/admin/login');
+          return;
+        }
 
-    setUser(JSON.parse(userData));
-    fetchAlumni();
-    setLoading(false);
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email || 'Admin',
+          role: 'admin'
+        });
+        fetchAlumni();
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/admin/login');
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   const fetchAlumni = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/admin/alumni', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch('/api/admin/alumni');
 
       if (response.ok) {
         const data = await response.json();
@@ -71,12 +81,10 @@ export default function AdminAlumni() {
 
   const handleStatusUpdate = async (id: string, status: 'verified' | 'rejected') => {
     try {
-      const token = localStorage.getItem('adminToken');
       const response = await fetch('/api/admin/alumni', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ id, status }),
       });

@@ -37,12 +37,25 @@ export default function AdminTimeline() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      router.push('/admin');
-      return;
-    }
-    fetchEvents();
+    const checkAuth = async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import('@/lib/supabaseBrowser');
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error || !session || !session.user) {
+          router.replace('/admin/login');
+          return;
+        }
+
+        fetchEvents();
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/admin/login');
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   const fetchEvents = async () => {
@@ -69,12 +82,6 @@ export default function AdminTimeline() {
     e.preventDefault();
     
     try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        alert('Authentication required. Please log in again.');
-        router.push('/admin');
-        return;
-      }
 
       const url = editingEvent ? '/api/timeline/manage' : '/api/timeline/manage';
       const method = editingEvent ? 'PUT' : 'POST';
@@ -92,7 +99,6 @@ export default function AdminTimeline() {
         method,
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(body)
       });
@@ -145,18 +151,10 @@ export default function AdminTimeline() {
     if (!confirm('Are you sure you want to delete this event?')) return;
     
     try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        alert('Authentication required. Please log in again.');
-        router.push('/admin');
-        return;
-      }
-
       const response = await fetch('/api/timeline/manage', {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ id })
       });
