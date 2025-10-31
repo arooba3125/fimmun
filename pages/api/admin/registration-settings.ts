@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
 
   // GET - Fetch all registration settings
@@ -84,4 +85,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     error: 'Method not allowed. Use GET to fetch settings or PUT to update them.' 
   });
 }
+
+export default requireAdminAuth(handler);
 

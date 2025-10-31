@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
 
   // Handle different methods
@@ -211,4 +212,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   return res.status(405).json({ success: false, message: 'Method not allowed' });
 }
+
+export default requireAdminAuth(handler);
 

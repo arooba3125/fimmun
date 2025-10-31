@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabaseAdmin = createAdminClient();
 
   if (req.method === 'GET') {
@@ -182,4 +183,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(405).json({ message: 'Method not allowed' });
+}
+
+// Require authentication for POST, PUT, DELETE; allow public GET
+export default async function wrappedHandler(req: NextApiRequest, res: NextApiResponse) {
+  // Allow public access to GET requests (for homepage features display)
+  if (req.method === 'GET') {
+    return handler(req, res);
+  }
+  
+  // Require admin auth for all other methods
+  return requireAdminAuth(handler)(req, res);
 }

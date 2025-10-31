@@ -20,17 +20,24 @@ export default function Registration() {
   useEffect(() => {
     const fetchCommitteeCaps = async () => {
       try {
-        const response = await fetch('/api/admin/committee-registration-caps');
-        const data = await response.json();
-        
-        if (data.success && data.caps) {
+        const response = await fetch('/api/admin/committee-registration-caps', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        type CapsResponse = { success: boolean; caps: CommitteeCap[] };
+        let data: CapsResponse | null = null;
+        try {
+          data = (await response.json()) as CapsResponse;
+        } catch {
+          throw new Error('Invalid JSON');
+        }
+        if (data && data.success && Array.isArray(data.caps)) {
           setCommitteeCaps(data.caps);
         } else {
-          throw new Error('Failed to fetch committee caps');
+          throw new Error('Unexpected response shape');
         }
       } catch (error) {
-        console.error('Error fetching committee caps:', error);
-        // Fallback to default caps
+        console.warn('Falling back to default committee caps. Reason:', error);
         setCommitteeCaps([
           { id: '1', committee_name: 'Pakistan National Assembly', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
           { id: '2', committee_name: 'Special Crisis Committee', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },

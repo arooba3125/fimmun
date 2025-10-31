@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { manuallyAdjustCommitteeCount } from '../../../lib/committeeRegistrationCaps';
+import { requireAdminAuth } from '../../../lib/auth-helpers';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       success: false,
@@ -62,4 +63,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+
+export default requireAdminAuth(handler);
 

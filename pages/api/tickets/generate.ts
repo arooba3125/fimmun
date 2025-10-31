@@ -158,3 +158,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
+// Tickets contain sensitive data, require admin authentication
+export default requireAdminAuth(handler);
+

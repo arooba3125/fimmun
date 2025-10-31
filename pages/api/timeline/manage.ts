@@ -12,7 +12,12 @@ function verifyAdminToken(req: NextApiRequest): { isValid: boolean; adminId?: st
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
   
   try {
-    const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET || 'fallback-secret') as JwtPayload;
+    const secret = process.env.ADMIN_JWT_SECRET;
+    if (!secret) {
+      console.error('ADMIN_JWT_SECRET is not configured');
+      return { isValid: false, error: 'Server configuration error' };
+    }
+    const decoded = jwt.verify(token, secret) as JwtPayload;
     return { isValid: true, adminId: decoded.id };
   } catch {
     return { isValid: false, error: 'Invalid or expired token' };

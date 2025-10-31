@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { MUN_CONSTANTS } from '@/lib/constants';
 
 export default function Footer() {
@@ -9,12 +8,11 @@ export default function Footer() {
           {/* Logo and Description */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-6">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                <Image
+              <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-white/5">
+                <img
                   src="/logo.png"
                   alt="FIMMUN Logo"
-                  fill
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div>

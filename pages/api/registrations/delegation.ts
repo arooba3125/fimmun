@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
 import formidable from 'formidable';
 import fs from 'fs';
+import { validateFileUpload } from '../../../lib/file-upload-validation';
 
 // Generate verification code
 function generateVerificationCode(): string {
@@ -61,13 +62,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const head_delegate_experience = Array.isArray(fields.head_delegate_experience) ? fields.head_delegate_experience[0] : fields.head_delegate_experience;
     const referral_source_id = Array.isArray(fields.referral_source_id) ? fields.referral_source_id[0] : fields.referral_source_id;
 
-    // Handle file upload
+    // Handle file upload with validation
     let payment_proof_url = null;
     const paymentProofFile = files.payment_proof?.[0];
     
     if (paymentProofFile) {
+      // Validate file before processing
+      const validation = validateFileUpload(paymentProofFile);
+      if (!validation.valid) {
+        // Clean up uploaded file
+        try {
+          fs.unlinkSync(paymentProofFile.filepath);
+        } catch {
+          // Ignore cleanup errors
+        }
+        return res.status(400).json({
+          success: false,
+          message: validation.error || 'Invalid file'
+        });
+      }
+
+      // Sanitize filename to prevent path traversal attacks
+      const sanitizedFilename = paymentProofFile.originalFilename
+        ?.replace(/[^a-zA-Z0-9.-]/g, '_')
+        .substring(0, 100) || 'payment_proof';
+      
       // Upload to Supabase Storage
-      const fileName = `payment_proofs/${Date.now()}_${paymentProofFile.originalFilename}`;
+      const fileName = `payment_proofs/${Date.now()}_${sanitizedFilename}`;
       const fileBuffer = fs.readFileSync(paymentProofFile.filepath);
       
       const { error: uploadError } = await supabaseAdmin.storage
@@ -78,6 +99,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
+        // Clean up uploaded file
+        try {
+          fs.unlinkSync(paymentProofFile.filepath);
+        } catch {
+          // Ignore cleanup errors
+        }
         return res.status(500).json({
           success: false,
           message: 'Failed to upload payment proof'

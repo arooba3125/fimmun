@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+// Using a plain img to avoid hydration issues around next/image in this setup
 import { MUN_CONSTANTS } from '@/lib/constants';
 
 export default function Navigation() {
@@ -21,13 +21,14 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden">
-              <Image
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
+              <img
                 src="/logo.png"
                 alt="FIMMUN Logo"
-                fill
-                className="object-cover"
-                priority
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+                style={{ display: 'block' }}
               />
             </div>
             <div>

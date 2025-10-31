@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
+import { getSupabaseBrowserClient } from '@/lib/supabaseBrowser';
 
 interface Delegation {
   id: string;
@@ -201,12 +202,16 @@ export default function AdminDelegations() {
               <div className="flex items-center space-x-4">
                 <span className="text-gray-600">Welcome, {user?.name}</span>
                 <button
-                  onClick={() => {
-                    localStorage.removeItem('adminToken');
-                    localStorage.removeItem('adminUser');
-                    router.push('/admin');
+                  onClick={async () => {
+                    try {
+                      const supabase = getSupabaseBrowserClient();
+                      await supabase.auth.signOut();
+                    } catch (error) {
+                      console.error('Error logging out:', error);
+                    }
+                    router.push('/admin/login');
                   }}
-                  className="text-red-600 hover:text-red-800 transition-colors"
+                  className="px-3 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Logout
                 </button>
