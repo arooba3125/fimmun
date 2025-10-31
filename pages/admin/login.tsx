@@ -12,11 +12,21 @@ export default function AdminLoginPage() {
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
-    const redirectedFrom = router.query.redirectedFrom;
-    if (redirectedFrom === '/admin') {
-      // no-op; can be used for UI message
-    }
-  }, [router.query]);
+    // If user is already authenticated, redirect to dashboard
+    const checkExistingSession = async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          router.replace('/admin/dashboard');
+        }
+      } catch (error) {
+        // Ignore errors, user will stay on login page
+      }
+    };
+    
+    checkExistingSession();
+  }, [router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +54,9 @@ export default function AdminLoginPage() {
       // Note: Admin email check is done server-side in middleware
       // Client-side check removed to prevent exposing admin email in client bundle
 
-      // Wait a moment for session to be established
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for session cookies to be properly set
+      // In production, cookies might take a moment to propagate
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Verify session was created
       const { data: sessionData } = await supabase.auth.getSession();
@@ -59,7 +70,9 @@ export default function AdminLoginPage() {
       setEmail('');
       setPassword('');
       
-      router.replace('/admin');
+      // Use window.location for a full page reload to ensure cookies are set
+      // This prevents redirect loops in production where cookies might not be immediately available
+      window.location.href = '/admin/dashboard';
     } catch {
       console.error('Login error');
       setError('An unexpected error occurred');

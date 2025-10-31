@@ -77,19 +77,36 @@ export default function AdminDashboard() {
       setCurrentTime(new Date());
     }, 1000);
 
-    // Check authentication
-    const token = localStorage.getItem('adminToken');
-    const userData = localStorage.getItem('adminUser');
+    // Check authentication with Supabase
+    const checkAuth = async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (!token || !userData) {
-      router.push('/admin');
-      return;
-    }
+        if (error || !session || !session.user) {
+          // Not authenticated, redirect to login
+          router.replace('/admin/login');
+          return;
+        }
 
-    setUser(JSON.parse(userData));
-    fetchStats();
-    fetchCommitteeCaps();
-    setLoading(false);
+        // Set user data from Supabase session
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email || 'Admin',
+          role: 'admin'
+        });
+
+        fetchStats();
+        fetchCommitteeCaps();
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/admin/login');
+      }
+    };
+
+    checkAuth();
 
     return () => clearInterval(timer);
   }, [router]);
