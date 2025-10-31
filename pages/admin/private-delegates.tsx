@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
+import { getSupabaseBrowserClient } from '@/lib/supabaseBrowser';
 
 interface PrivateDelegate {
   id: string;
@@ -21,10 +22,20 @@ interface PrivateDelegate {
   updated_at: string;
 }
 
+interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 export default function AdminPrivateDelegates() {
+  const [user, setUser] = useState<AdminUser | null>(null);
   const [delegates, setDelegates] = useState<PrivateDelegate[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
+  const [editingDelegate, setEditingDelegate] = useState<PrivateDelegate | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,7 +50,14 @@ export default function AdminPrivateDelegates() {
           return;
         }
 
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email || 'Admin',
+          role: 'admin'
+        });
         fetchDelegates();
+        setLoading(false);
       } catch (error) {
         console.error('Auth check error:', error);
         router.replace('/admin/login');
@@ -66,23 +84,23 @@ export default function AdminPrivateDelegates() {
     }
   };
 
-  const updateStatus = async (id: string, status: 'verified' | 'rejected') => {
+  const handleStatusUpdate = async (id: string, status: 'verified' | 'rejected') => {
     try {
       const response = await fetch('/api/admin/private-delegates', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, status }),
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        fetchDelegates(); // Refresh the list
-      } else {
-        alert('Failed to update status: ' + data.error);
+
+      if (response.ok) {
+        await fetchDelegates(); // Refresh the list
+        setShowEditModal(false);
+        setEditingDelegate(null);
       }
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Failed to update status');
+      console.error('Error updating private delegate status:', error);
     }
   };
 
@@ -262,19 +280,28 @@ export default function AdminPrivateDelegates() {
                             {delegate.status === 'pending' && (
                               <>
                                 <button
-                                  onClick={() => updateStatus(delegate.id, 'verified')}
+                                  onClick={() => handleStatusUpdate(delegate.id, 'verified')}
                                   className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
                                 >
                                   Verify
                                 </button>
                                 <button
-                                  onClick={() => updateStatus(delegate.id, 'rejected')}
+                                  onClick={() => handleStatusUpdate(delegate.id, 'rejected')}
                                   className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
                                 >
                                   Reject
                                 </button>
                               </>
                             )}
+                            <button
+                              onClick={() => {
+                                setEditingDelegate(delegate);
+                                setShowEditModal(true);
+                              }}
+                              className="text-indigo-600 hover:text-indigo-900 text-sm"
+                            >
+                              Edit
+                            </button>
                             <button
                               onClick={() => deleteDelegate(delegate.id)}
                               className="px-3 py-1 text-red-600 hover:text-red-800 text-sm border border-red-200 rounded hover:bg-red-50 transition-colors"
@@ -343,6 +370,45 @@ export default function AdminPrivateDelegates() {
             </div>
           </div>
         </main>
+
+        {/* Edit Modal */}
+        {showEditModal && editingDelegate && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Update Private Delegate Status
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Delegate: {editingDelegate.name} ({editingDelegate.institution})
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => handleStatusUpdate(editingDelegate.id, 'verified')}
+                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Verify
+                  </button>
+                  <button
+                    onClick={() => handleStatusUpdate(editingDelegate.id, 'rejected')}
+                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                  >
+                    Reject
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingDelegate(null);
+                    }}
+                    className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

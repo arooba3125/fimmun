@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createAdminClient } from '../../../lib/supabaseClient';
-import { incrementCommitteeRegistrationCount, decrementCommitteeRegistrationCount } from '../../../lib/committeeRegistrationCaps';
 import { generateUniqueSerialNumber, SERIAL_NUMBER_CATEGORIES } from '../../../lib/serialNumberUtils';
 import { requireAdminAuth } from '../../../lib/auth-helpers';
 
@@ -39,30 +38,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
 
   if (req.method === 'PUT') {
     // Update private delegate status
-    const { id, status } = req.body;
+    const { id, status } = req.body as { id?: string; status?: 'verified' | 'rejected' };
 
     if (!id || !status) {
       return res.status(400).json({ 
-        message: 'ID and status are required' 
+        success: false,
+        error: 'ID and status are required' 
       });
     }
 
     try {
-      // First, get the current delegate data to check committee preferences and previous status
-      const { data: currentDelegate, error: fetchError } = await supabaseAdmin
-        .from('private_delegates')
-        .select('committee_preferences, status')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) {
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to fetch private delegate data',
-          details: fetchError.message
-        });
-      }
-
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString()
       };
@@ -90,25 +75,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
         });
       }
 
-      // Handle committee registration caps updates
-      if (currentDelegate?.committee_preferences && currentDelegate.committee_preferences.length > 0) {
-        const wasVerified = currentDelegate.status === 'verified';
-        const isNowVerified = status === 'verified';
-        
-        // Only update counts if status actually changed
-        if (wasVerified !== isNowVerified) {
-          const primaryCommittee = currentDelegate.committee_preferences[0]; // Use first preference
-          
-          if (isNowVerified) {
-            // Increment committee count when verifying
-            await incrementCommitteeRegistrationCount(primaryCommittee);
-          } else if (wasVerified && !isNowVerified) {
-            // Decrement committee count when unverifying
-            await decrementCommitteeRegistrationCount(primaryCommittee);
-          }
-        }
-      }
-
       return res.status(200).json({
         success: true,
         message: 'Private delegate updated successfully!',
@@ -126,17 +92,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
 
   if (req.method === 'DELETE') {
     // Delete private delegate
-    const { id } = req.body;
+    const { id } = req.body as { id?: string };
 
     if (!id) {
-      return res.status(400).json({ message: 'ID is required' });
+      return res.status(400).json({ success: false, error: 'ID is required' });
     }
 
     try {
       // Get delegate info before deletion
       const { data: delegate } = await supabaseAdmin
         .from('private_delegates')
-        .select('status, committee_preferences')
+        .select('status')
         .eq('id', id)
         .single();
 
@@ -154,9 +120,23 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
         });
       }
 
-      // Update committee registration cap if delegate was verified
-      if (delegate && delegate.status === 'verified' && delegate.committee_preferences && delegate.committee_preferences.length > 0) {
-        await decrementCommitteeRegistrationCount(delegate.committee_preferences[0]);
+      // Update registration cap if delegate was verified
+      if (delegate && delegate.status === 'verified') {
+        const { data: capData } = await supabaseAdmin
+          .from('registration_caps')
+          .select('current_count')
+          .eq('category', 'delegates')
+          .single();
+
+        if (capData) {
+          await supabaseAdmin
+            .from('registration_caps')
+            .update({ 
+              current_count: Math.max(0, capData.current_count - 1),
+              updated_at: new Date().toISOString()
+            })
+            .eq('category', 'delegates');
+        }
       }
 
       return res.status(200).json({
@@ -173,7 +153,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
     }
   }
 
-  return res.status(405).json({ message: 'Method not allowed' });
+  return res.status(405).json({ success: false, error: 'Method not allowed' });
 }
 
 export default requireAdminAuth(handler);
+
