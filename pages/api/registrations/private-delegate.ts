@@ -179,6 +179,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Check committee capacity (for the first preference)
+    if (committee_preferences && committee_preferences.length > 0) {
+      const selectedCommittee = committee_preferences[0];
+      const { data: committeeCap } = await supabaseAdmin
+        .from('committee_registration_caps')
+        .select('current_count, max_capacity')
+        .eq('committee_name', selectedCommittee)
+        .single();
+
+      if (committeeCap && committeeCap.current_count >= committeeCap.max_capacity) {
+        return res.status(400).json({
+          success: false,
+          message: `The ${selectedCommittee} committee is full. Registration for this committee is closed.`
+        });
+      }
+    }
+
     // Generate verification code
     const verificationCode = generateVerificationCode();
 

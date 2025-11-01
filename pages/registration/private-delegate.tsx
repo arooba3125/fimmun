@@ -19,6 +19,13 @@ interface ReferralSource {
   name: string;
 }
 
+interface CommitteeCap {
+  id: string;
+  committee_name: string;
+  max_capacity: number;
+  current_count: number;
+}
+
 const COMMITTEES = [
   'Pakistan National Assembly',
   'Special Crisis Committee',
@@ -46,9 +53,10 @@ export default function PrivateDelegateRegistration() {
   const [success, setSuccess] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [referralSources, setReferralSources] = useState<ReferralSource[]>([]);
+  const [committeeCaps, setCommitteeCaps] = useState<CommitteeCap[]>([]);
 
   useEffect(() => {
-    // Fetch referral sources on component mount
+    // Fetch referral sources and committee capacities on component mount
     const fetchReferralSources = async () => {
       try {
         const response = await fetch('/api/referral-sources');
@@ -60,7 +68,23 @@ export default function PrivateDelegateRegistration() {
         console.error('Error fetching referral sources:', error);
       }
     };
+
+    const fetchCommitteeCaps = async () => {
+      try {
+        const response = await fetch('/api/committee-registration-caps', { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.caps) {
+            setCommitteeCaps(data.caps);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching committee capacities:', error);
+      }
+    };
+
     fetchReferralSources();
+    fetchCommitteeCaps();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -80,10 +104,23 @@ export default function PrivateDelegateRegistration() {
   };
 
   const handleCommitteeChange = (committee: string) => {
+    // Check if committee is full
+    const committeeCap = committeeCaps.find(cap => cap.committee_name === committee);
+    if (committeeCap && committeeCap.current_count >= committeeCap.max_capacity) {
+      setError(`The ${committee} is full. Please select another committee.`);
+      return;
+    }
+    
+    setError(''); // Clear error if committee is available
     setFormData(prev => ({
       ...prev,
       committee_preference: committee
     }));
+  };
+
+  const isCommitteeFull = (committeeName: string): boolean => {
+    const committeeCap = committeeCaps.find(cap => cap.committee_name === committeeName);
+    return committeeCap ? committeeCap.current_count >= committeeCap.max_capacity : false;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,20 +387,55 @@ export default function PrivateDelegateRegistration() {
                   Committee Preference * (Select one)
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {COMMITTEES.map((committee) => (
-                    <label key={committee} className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="committee_preference"
-                        value={committee}
-                        checked={formData.committee_preference === committee}
-                        onChange={() => handleCommitteeChange(committee)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{committee}</span>
-                    </label>
-                  ))}
+                  {COMMITTEES.map((committee) => {
+                    const isFull = isCommitteeFull(committee);
+                    const committeeCap = committeeCaps.find(cap => cap.committee_name === committee);
+                    const spotsLeft = committeeCap ? committeeCap.max_capacity - committeeCap.current_count : 0;
+                    
+                    return (
+                      <label 
+                        key={committee} 
+                        className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                          isFull 
+                            ? 'border-red-200 bg-red-50 cursor-not-allowed opacity-60' 
+                            : formData.committee_preference === committee
+                            ? 'border-blue-500 bg-blue-50 cursor-pointer'
+                            : 'border-gray-200 bg-white hover:border-blue-300 cursor-pointer'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3 flex-1">
+                          <input
+                            type="radio"
+                            name="committee_preference"
+                            value={committee}
+                            checked={formData.committee_preference === committee}
+                            onChange={() => handleCommitteeChange(committee)}
+                            disabled={isFull}
+                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 disabled:cursor-not-allowed"
+                          />
+                          <div className="flex-1">
+                            <span className={`text-sm ${isFull ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
+                              {committee}
+                            </span>
+                            {committeeCap && (
+                              <span className={`text-xs ml-2 ${isFull ? 'text-red-600' : 'text-gray-500'}`}>
+                                ({committeeCap.current_count}/{committeeCap.max_capacity} {isFull ? 'FULL' : `${spotsLeft} spots left`})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {isFull && (
+                          <span className="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded">
+                            FULL
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
+                {committeeCaps.length === 0 && (
+                  <p className="text-xs text-gray-500 mt-2">Loading committee availability...</p>
+                )}
               </div>
 
               {/* Referral Source */}
