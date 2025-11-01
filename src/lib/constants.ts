@@ -6,7 +6,7 @@ export const MUN_CONSTANTS = {
   description: "Join us for an extraordinary Model United Nations conference that brings together young leaders, diplomats, and change-makers from across the region. Experience the thrill of international diplomacy, engage in meaningful debates, and develop critical thinking skills that will shape your future.",
   
   // Event Details
-  date: "November 21-23, 2025",
+  date: "December 5-7, 2025",
   location: "Fazaia Inter College Minhas, Pakistan",
   
   // Contact Information
@@ -90,7 +90,7 @@ export const MUN_CONSTANTS = {
   // Schedule
   schedule: [
     {
-      day: "Day 1 - 21 November 2025",
+      day: "Day 1 - 5 December 2025",
       events: [
         "Will be revealed soon"
         // "09:00 - Registration & Welcome Ceremony",
@@ -104,7 +104,7 @@ export const MUN_CONSTANTS = {
       ]
     },
     {
-      day: "Day 2 - 22 November 2025",
+      day: "Day 2 - 6 December 2025",
       events: [
                 "Will be revealed soon"
 
@@ -119,7 +119,7 @@ export const MUN_CONSTANTS = {
       ]
     },
     {
-      day: "Day 3 - 23 November 2025",
+      day: "Day 3 - 7 December 2025",
       events: [
                 "Will be revealed soon"
 

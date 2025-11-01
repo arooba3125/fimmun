@@ -96,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         serial_number: registration.serial_number,
         registration_type: registrationType,
         event_name: 'FIMMUN 2025',
-        date: 'November 21-23, 2025',
+        date: 'December 5-7, 2025',
         location: 'Fazaia Inter College Minhas, Pakistan'
       };
 

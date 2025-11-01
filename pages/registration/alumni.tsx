@@ -262,7 +262,7 @@ export default function AlumniRegistration() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
                   <h3 className="text-lg font-semibold text-blue-900 mb-3">What to Expect</h3>
                   <ul className="text-sm text-blue-800 space-y-2 text-left">
-                    <li>• Alumni will arrive on 2nd day only (22 November)</li>
+                    <li>• Alumni will arrive on 2nd day only (6 December)</li>
                     <li>• You can observe committee sessions on the 2nd day</li>
                     <li>• Enjoy the social evening and exclusive reunion party</li>
                     <li>• Attend the formal dinner hosted for alumni</li>
@@ -347,7 +347,7 @@ export default function AlumniRegistration() {
                 <div>
                   <h3 className="text-lg font-semibold text-yellow-800 mb-2">Important Note for Alumni</h3>
                   <ul className="text-sm text-yellow-700 space-y-1">
-                    <li>• Alumni will arrive on 2nd day only (22 November)</li>
+                    <li>• Alumni will arrive on 2nd day only (6 December)</li>
                     <li>• You can observe committee sessions on the 2nd day</li>
                     <li>• Enjoy the social evening and exclusive reunion party</li>
                     <li>• Attend the formal dinner hosted for alumni</li>

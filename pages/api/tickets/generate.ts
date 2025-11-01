@@ -52,7 +52,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
           committees: data.committee_preferences || [],
           cnic: data.cnic || null,
           event: 'FIMMUN 2025',
-          date: 'TBD', // You can update this with actual event dates
+          date: 'December 5-7, 2025',
           location: 'Forman Christian College, Lahore'
         };
         break;
@@ -78,7 +78,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
           committees: data.committee_preference ? [data.committee_preference] : [],
           cnic: data.cnic || null,
           event: 'FIMMUN 2025',
-          date: 'TBD',
+          date: 'December 5-7, 2025',
           location: 'Forman Christian College, Lahore'
         };
         break;
@@ -104,7 +104,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
           committees: ['All Sessions'],
           cnic: data.cnic || null,
           event: 'FIMMUN 2025',
-          date: 'TBD',
+          date: 'December 5-7, 2025',
           location: 'Forman Christian College, Lahore'
         };
         break;
@@ -130,7 +130,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
           committees: ['Alumni Events'],
           cnic: data.cnic || null,
           event: 'FIMMUN 2025',
-          date: 'TBD',
+          date: 'December 5-7, 2025',
           location: 'Forman Christian College, Lahore'
         };
         break;
