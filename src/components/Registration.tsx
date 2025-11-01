@@ -20,9 +20,9 @@ export default function Registration() {
   useEffect(() => {
     const fetchCommitteeCaps = async () => {
       try {
-        const response = await fetch('/api/admin/committee-registration-caps', { cache: 'no-store' });
+        const response = await fetch('/api/committee-registration-caps', { cache: 'no-store' });
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         type CapsResponse = { success: boolean; caps: CommitteeCap[] };
         let data: CapsResponse | null = null;
@@ -299,63 +299,63 @@ export default function Registration() {
         </div>
         
         {/* Registration Caps Info */}
-        <div className="mt-16 bg-white/10 backdrop-blur-sm rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-white mb-6 text-center">Registration Caps</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-12 sm:mt-16 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">Registration Caps</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-200 mb-2">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-200 mb-2">
                 {loading ? '...' : getTotalDelegatesCap()}
               </div>
-              <div className="text-blue-100">Total Delegates</div>
+              <div className="text-sm sm:text-base text-blue-100">Total Delegates</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-200 mb-2">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-200 mb-2">
                 {loading ? '...' : getTotalObserversCap()}
               </div>
-              <div className="text-blue-100">Observers</div>
+              <div className="text-sm sm:text-base text-blue-100">Observers</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-200 mb-2">
+              <div className="text-2xl sm:text-3xl font-bold text-green-200 mb-2">
                 {loading ? '...' : getTotalAlumniCap()}
               </div>
-              <div className="text-blue-100">Alumni</div>
+              <div className="text-sm sm:text-base text-blue-100">Alumni</div>
             </div>
           </div>
           
-          <div className="mt-8 text-center">
-            <h4 className="text-lg font-semibold text-white mb-4">Committee Caps</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">PNA</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Pakistan National Assembly')} delegates</div>
+          <div className="mt-6 sm:mt-8 text-center">
+            <h4 className="text-base sm:text-lg font-semibold text-white mb-4">Committee Caps</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">PNA</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Pakistan National Assembly')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">Crisis</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Special Crisis Committee')} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">Crisis</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Special Crisis Committee')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">UNSC</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('United Nations Security Council')} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">UNSC</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('United Nations Security Council')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">UNHRC</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('United Nations Human Rights Council')} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">UNHRC</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('United Nations Human Rights Council')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">UNDISEC</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Disarmament and International Security Committee')} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">UNDISEC</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Disarmament and International Security Committee')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">UNSCW</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Commission on the Status of Women')} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">UNSCW</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Commission on the Status of Women')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">OIC</div>
-                <div className="text-blue-200">{loading ? '...' : getCommitteeCap('Organization of Islamic Cooperation')} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">OIC</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Organization of Islamic Cooperation')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="font-semibold text-white">Additional</div>
-                <div className="text-blue-200">{loading ? '...' : 0} delegates</div>
+              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
+                <div className="font-semibold text-white text-xs sm:text-sm">Additional</div>
+                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : '0 delegates'}</div>
               </div>
             </div>
           </div>

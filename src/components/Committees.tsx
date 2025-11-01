@@ -53,18 +53,18 @@ function CommitteeModal({ committee, isOpen, onClose }: CommitteeModalProps) {
 
           <div className="space-y-6">
             {/* Committee Details */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Capacity</h4>
-                <p className="text-2xl font-bold text-blue-600">{committee.capacity}</p>
-                <p className="text-sm text-blue-700">Total Delegates</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-green-900 mb-2">Current</h4>
-                <p className="text-2xl font-bold text-green-600">{committee.current_count}</p>
-                <p className="text-sm text-green-700">Verified Delegates</p>
-              </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">Capacity</h4>
+              <p className="text-xl sm:text-2xl font-bold text-blue-600">{committee.capacity}</p>
+              <p className="text-xs sm:text-sm text-blue-700">Total Delegates</p>
             </div>
+            <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+              <h4 className="font-semibold text-green-900 mb-2 text-sm sm:text-base">Current</h4>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">{committee.current_count}</p>
+              <p className="text-xs sm:text-sm text-green-700">Verified Delegates</p>
+            </div>
+          </div>
 
             {/* Committee Information */}
             <div>
@@ -229,11 +229,16 @@ export default function Committees() {
 
   const fetchCommittees = async () => {
     try {
-      // Fetch from committee registration caps API
-      const response = await fetch('/api/admin/committee-registration-caps');
+      // Fetch from public committee registration caps API
+      const response = await fetch('/api/committee-registration-caps', { cache: 'no-store' });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       
-      if (data.success && data.caps) {
+      if (data.success && data.caps && Array.isArray(data.caps)) {
         // Transform the caps data to match Committee interface
         const committeesData = data.caps.map((cap: {
           id: string;
@@ -253,7 +258,7 @@ export default function Committees() {
         }));
         setCommittees(committeesData);
       } else {
-        throw new Error('Failed to fetch committee data');
+        throw new Error('Invalid response format from API');
       }
     } catch (error) {
       console.error('Error fetching committees:', error);
@@ -261,7 +266,7 @@ export default function Committees() {
       setCommittees(MUN_CONSTANTS.committees.map((committee, index) => ({
         id: index.toString(),
         name: committee.name,
-        description: committee.topic,
+        description: getCommitteeDescription(committee.name),
         capacity: 30,
         current_count: 0,
         created_at: new Date().toISOString(),
@@ -316,10 +321,10 @@ export default function Committees() {
         <div className="grid md:grid-cols-2 gap-8">
           {committees.map((committee) => (
             <div key={committee.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-              <div className="p-8">
+              <div className="p-4 sm:p-6 lg:p-8">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                       {committee.name}
                     </h3>
                   </div>
@@ -338,21 +343,21 @@ export default function Committees() {
                   </div>
                 )}
                 
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6">
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="text-sm text-gray-600">
-                      Capacity: {committee.capacity}
+                      Capacity: <span className="font-semibold text-gray-900">{committee.capacity}</span>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="text-sm text-gray-600">
-                      Current: {committee.current_count}
+                      Current: <span className="font-semibold text-gray-900">{committee.current_count}</span>
                     </span>
                   </div>
                 </div>
