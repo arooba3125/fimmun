@@ -53,9 +53,48 @@ export default function Ticket() {
   };
 
   const handleDownload = async () => {
-    // For now, we'll use the print dialog which allows "Save as PDF"
-    // In production, you could use libraries like html2canvas + jsPDF for direct PDF generation
-    window.print();
+    if (!ticketRef.current || !ticket) {
+      return;
+    }
+
+    try {
+      // Dynamically import html2canvas only on client when needed
+      const html2canvas = (await import('html2canvas')).default;
+
+      // Capture the ticket DOM as canvas
+      const canvas = await html2canvas(ticketRef.current, { scale: 2, useCORS: true });
+
+      // Convert to blob via data URL
+      const dataUrl = canvas.toDataURL('image/png');
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+
+      // Create object URL and trigger download (better compatibility on mobile/webviews)
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `FIMMUN_Ticket_${ticket.serial_number}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Revoke URL later
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      // Fallback: open the print dialog as a last resort
+      // Also try opening the ticket in a new tab so users can long-press to save on mobile
+      try {
+        const printOpened = window.open('', '_blank');
+        if (printOpened) {
+          printOpened.document.write(ticketRef.current!.outerHTML);
+          printOpened.document.close();
+        } else {
+          window.print();
+        }
+      } catch (e) {
+        window.print();
+      }
+    }
   };
 
   if (loading) {

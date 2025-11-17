@@ -21,13 +21,24 @@ export default function Registration() {
     const fetchCommitteeCaps = async () => {
       try {
         const response = await fetch('/api/committee-registration-caps', { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        // Read body for better error diagnostics when non-OK
+        const text = await response.text();
+        let body: unknown = text;
+        try {
+          body = JSON.parse(text);
+        } catch {
+          // keep as text
         }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${JSON.stringify(body)}`);
+        }
+
         type CapsResponse = { success: boolean; caps: CommitteeCap[] };
         let data: CapsResponse | null = null;
         try {
-          data = (await response.json()) as CapsResponse;
+          data = (await Promise.resolve(JSON.parse(JSON.stringify(body)))) as CapsResponse;
         } catch {
           throw new Error('Invalid JSON');
         }
@@ -37,6 +48,7 @@ export default function Registration() {
           throw new Error('Unexpected response shape');
         }
       } catch (error) {
+        console.error('Error fetching registration caps:', error);
         console.warn('Falling back to default committee caps. Reason:', error);
         setCommitteeCaps([
           { id: '1', committee_name: 'Pakistan National Assembly', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },

@@ -21,6 +21,14 @@
     "react-dom": "^19.1.0",
     "xlsx": "^0.18.5"
   },
+  "dependenciesMeta": {
+    "html2canvas": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "html2canvas": "^1.4.1"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/bcryptjs": "^2.4.6",

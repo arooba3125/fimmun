@@ -249,6 +249,14 @@ export default function AdminDelegationMembers() {
                           View Proof
                         </a>
                       )}
+                      {member.status === 'verified' && member.serial_number && (
+                        <button
+                          onClick={() => window.open(`/ticket/${member.id}?type=delegation-member`, '_blank')}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                        >
+                          Download Ticket
+                        </button>
+                      )}
                       {member.status === 'pending' && (
                         <>
                           <button

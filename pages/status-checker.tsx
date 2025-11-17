@@ -51,7 +51,7 @@ export default function StatusChecker() {
     }
   };
 
-  const downloadTicket = () => {
+  const downloadTicket = async () => {
     if (!result?.mun_ticket) return;
 
     const ticket = result.mun_ticket;
@@ -96,11 +96,32 @@ export default function StatusChecker() {
       ctx.fillText(`Delegation Serial: ${result.delegation_serial}`, 100, 520);
     }
 
-    // Download
-    const link = document.createElement('a');
-    link.download = `FIMMUN_Ticket_${ticket.serial_number}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
+    // Try to convert the data URL to a Blob and download via object URL.
+    // This is more compatible with mobile browsers and webviews (Instagram, etc.).
+    try {
+      const dataUrl = canvas.toDataURL('image/png');
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `FIMMUN_Ticket_${ticket.serial_number}.png`;
+      // Some webviews require the link to be added to the DOM
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Revoke the object URL after a short delay
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      // Fallback: open the image in a new tab/window so user can long-press and save.
+      const dataUrl = canvas.toDataURL('image/png');
+      const opened = window.open(dataUrl, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        alert('Unable to download automatically. Please long-press the image and save it to your device.');
+      }
+    }
   };
 
   return (
