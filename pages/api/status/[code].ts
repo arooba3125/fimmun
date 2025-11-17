@@ -87,23 +87,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     // Add serial number if verified
-    if (registration.status === 'verified' && registration.serial_number) {
-      response.serial_number = registration.serial_number;
-      
-      // Generate MUN ticket data
-      response.mun_ticket = {
-        name: registration.name,
-        serial_number: registration.serial_number,
-        registration_type: registrationType,
-        event_name: 'FIMMUN 2025',
-        date: 'December 5-7, 2025',
-        location: 'Fazaia Inter College Minhas, Pakistan'
-      };
+    if (registration.status === 'verified') {
+      // For delegation members, the serial number may be stored on the member
+      // record or on the related delegation. Prefer the member serial, but
+      // fall back to the delegation serial so members can download tickets.
+      const memberSerial = (registration as { serial_number?: string }).serial_number;
+      const delegationSerial = registration.delegations ? registration.delegations.delegation_serial : undefined;
+      const effectiveSerial = memberSerial || delegationSerial;
 
-      // Add delegation info for delegation members
-      if (registrationType === 'delegation_member' && registration.delegations) {
-        response.delegation_name = registration.delegations.delegation_name;
-        response.delegation_serial = registration.delegations.delegation_serial;
+      if (effectiveSerial) {
+        response.serial_number = effectiveSerial;
+
+        // Generate MUN ticket data
+        response.mun_ticket = {
+          name: registration.name,
+          serial_number: effectiveSerial,
+          registration_type: registrationType,
+          event_name: 'FIMMUN 2025',
+          date: 'December 5-7, 2025',
+          location: 'Fazaia Inter College Minhas, Pakistan'
+        };
+
+        // Add delegation info for delegation members
+        if (registrationType === 'delegation_member' && registration.delegations) {
+          response.delegation_name = registration.delegations.delegation_name;
+          response.delegation_serial = registration.delegations.delegation_serial;
+        }
       }
     }
 
