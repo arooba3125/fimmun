@@ -7,8 +7,7 @@ const COMMITTEES = [
   'United Nations Security Council',
   'United Nations Human Rights Council',
   'Disarmament and International Security Committee',
-  'Commission on the Status of Women',
-  'Organization of Islamic Cooperation'
+  'Commission on the Status of Women'
 ];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

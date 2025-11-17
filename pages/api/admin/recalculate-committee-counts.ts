@@ -114,7 +114,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
               'united nations human rights council': 'united nations human rights council (unhrc)',
               'united nations security council': 'united nations security council (unsc)',
               'united nations status of women committee': 'united nations status of women committee (unscw)',
-              'organization of islamic cooperation': 'organization of islamic cooperation (oic)',
               'pakistan national assembly': 'pakistan national assembly (pna)',
               'crisis committee': 'crisis committee '
             };
@@ -170,7 +169,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse, user: { id: st
               'united nations human rights council': 'united nations human rights council (unhrc)',
               'united nations security council': 'united nations security council (unsc)',
               'united nations status of women committee': 'united nations status of women committee (unscw)',
-              'organization of islamic cooperation': 'organization of islamic cooperation (oic)',
               'pakistan national assembly': 'pakistan national assembly (pna)',
               'crisis committee': 'crisis committee '
             };

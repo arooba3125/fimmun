@@ -22,7 +22,7 @@ function getCommitteeDescription(committeeName: string): string {
     
     "Commission on the Status of Women": "Advocate for gender equality and women's rights in this dedicated committee. Delegates will address issues affecting women and girls globally, working towards achieving gender parity and empowerment. This committee is ideal for delegates interested in social justice and gender issues.",
     
-    "Organization of Islamic Cooperation": "Represent the interests of the Muslim world in this specialized committee. Delegates will address issues affecting Islamic countries, promote cooperation among member states, and work towards common goals. This committee offers insights into Islamic diplomacy and interfaith dialogue.",
+    // Organization of Islamic Cooperation was removed per admin instruction
     
     "Disarmament and International Security Committee": "Tackle global security challenges and arms control issues in this critical committee. Delegates will work on nuclear disarmament, conventional weapons control, and international security measures. This committee is perfect for delegates interested in international security and conflict resolution."
   };

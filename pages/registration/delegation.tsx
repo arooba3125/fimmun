@@ -27,7 +27,7 @@ const COMMITTEES = [
   'United Nations Human Rights Council',
   'Disarmament and International Security Committee',
   'Commission on the Status of Women',
-  'Organization of Islamic Cooperation'
+  // 'Organization of Islamic Cooperation' removed per admin instruction
 ];
 
 export default function DelegationRegistration() {

@@ -57,7 +57,6 @@ export default function Registration() {
           { id: '4', committee_name: 'United Nations Human Rights Council', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
           { id: '5', committee_name: 'Disarmament and International Security Committee', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
           { id: '6', committee_name: 'Commission on the Status of Women', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
-          { id: '7', committee_name: 'Organization of Islamic Cooperation', max_capacity: 30, current_count: 0, created_at: '', updated_at: '' },
         ]);
       } finally {
         setLoading(false);
@@ -361,10 +360,7 @@ export default function Registration() {
                 <div className="font-semibold text-white text-xs sm:text-sm">UNSCW</div>
                 <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Commission on the Status of Women')} delegates`}</div>
               </div>
-              <div className="bg-white/5 rounded-lg p-2 sm:p-3">
-                <div className="font-semibold text-white text-xs sm:text-sm">OIC</div>
-                <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : `${getCommitteeCap('Organization of Islamic Cooperation')} delegates`}</div>
-              </div>
+              {/* OIC removed per admin instruction */}
               <div className="bg-white/5 rounded-lg p-2 sm:p-3">
                 <div className="font-semibold text-white text-xs sm:text-sm">Additional</div>
                 <div className="text-blue-200 text-xs sm:text-sm break-words">{loading ? '...' : '0 delegates'}</div>

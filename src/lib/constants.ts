@@ -73,11 +73,7 @@ export const MUN_CONSTANTS = {
       topic: "Will be soon updated",
       difficulty: "Beginner"
     },
-       {     
-      name: "Organization of Islamic Cooperation",
-      topic: "Will be soon updated",
-      difficulty: "Beginner"
-    },
+    
            {     
       name: "Disarmament and International Security Committee",
       topic: "Will be soon updated",
@@ -159,7 +155,7 @@ export const MUN_CONSTANTS = {
   stats: [
     { number: "500+", label: "Expected Participants" },
     { number: "10+", label: "Schools Participating" },
-    { number: "7", label: "Expert Committees" },
+    { number: "6", label: "Expert Committees" },
     { number: "3", label: "Days of Diplomacy" }
   ]
 };
