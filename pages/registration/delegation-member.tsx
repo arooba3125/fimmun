@@ -576,7 +576,7 @@ export default function DelegationMemberRegistration() {
                     <p className="text-sm text-indigo-700">Delegation Member Registration</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-indigo-900">PKR 2,500</p>
+                    <p className="text-2xl font-bold text-indigo-900">PKR 3,000</p>
                   </div>
                 </div>
               </div>

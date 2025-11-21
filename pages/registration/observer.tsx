@@ -348,7 +348,7 @@ export default function ObserverRegistration() {
                     <p className="text-sm text-purple-700">Observer Registration</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-purple-900">PKR 3,000</p>
+                    <p className="text-2xl font-bold text-purple-900">PKR 3,500</p>
                   </div>
                 </div>
               </div>

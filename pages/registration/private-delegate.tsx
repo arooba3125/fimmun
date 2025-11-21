@@ -468,7 +468,7 @@ export default function PrivateDelegateRegistration() {
                     <p className="text-sm text-blue-700">Private Delegate Registration</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-900">PKR 2,700</p>
+                    <p className="text-2xl font-bold text-blue-900">PKR 3,200</p>
                   </div>
                 </div>
               </div>

@@ -265,7 +265,7 @@ export default function DelegationRegistration() {
                 <div>
                   <p className="text-sm text-blue-800">
                     <strong>Note:</strong> Registration of the Head delegate will be done alongside the Registration of Delegation. 
-                    The head delegate fee is PKR 3,000. Additional delegation members will pay PKR 2,500 each.
+                    The head delegate fee is PKR 3,500. Additional delegation members will pay PKR 3,000 each.
                   </p>
                 </div>
               </div>
@@ -461,12 +461,12 @@ export default function DelegationRegistration() {
                     <p className="text-sm text-indigo-700">Head Delegate Registration</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-indigo-900">PKR 3,000</p>
+                    <p className="text-2xl font-bold text-indigo-900">PKR 3,500</p>
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-indigo-200">
                   <p className="text-xs text-indigo-600">
-                    <strong>Note:</strong> Additional delegation members will pay PKR 2,500 each when they register.
+                    <strong>Note:</strong> Additional delegation members will pay PKR 3,000 each when they register.
                   </p>
                 </div>
               </div>
