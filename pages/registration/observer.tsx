@@ -375,6 +375,9 @@ export default function ObserverRegistration() {
                 <p className="text-xs text-gray-600 mt-2">
                   Please make the payment to the above account and upload proof of payment.
                 </p>
+                <p className="text-xs text-red-700 mt-2 font-semibold">
+                  Fees are non-refundable.
+                </p>
               </div>
 
               {/* Payment Proof */}
